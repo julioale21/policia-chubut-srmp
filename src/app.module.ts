@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DependenciesModule } from './dependencies/dependencies.module';
 
 @Module({
   imports: [
@@ -18,6 +19,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true,
       synchronize: true,
     }),
+
+    DependenciesModule,
   ],
   controllers: [],
   providers: [],
