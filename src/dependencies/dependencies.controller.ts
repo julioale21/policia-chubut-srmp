@@ -3,13 +3,13 @@ import {
   Get,
   Post,
   Body,
-  // Patch,
+  Patch,
   Param,
   Delete,
 } from '@nestjs/common';
 import { DependenciesService } from './dependencies.service';
 import { CreateDependencyDto } from './dto/create-dependency.dto';
-// import { UpdateDependencyDto } from './dto/update-dependency.dto';
+import { UpdateDependencyDto } from './dto/update-dependency.dto';
 
 @Controller('dependencies')
 export class DependenciesController {
@@ -25,21 +25,21 @@ export class DependenciesController {
     return this.dependenciesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.dependenciesService.findOne(+id);
+  @Get(':term')
+  findOne(@Param('term') id: string) {
+    return this.dependenciesService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(
-  //   @Param('id') id: string,
-  //   @Body() updateDependencyDto: UpdateDependencyDto,
-  // ) {
-  //   return this.dependenciesService.update(+id, updateDependencyDto);
-  // }
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateDependencyDto: UpdateDependencyDto,
+  ) {
+    return this.dependenciesService.update(id, updateDependencyDto);
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.dependenciesService.remove(+id);
+    return this.dependenciesService.remove(id);
   }
 }
