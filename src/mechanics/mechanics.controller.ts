@@ -10,6 +10,7 @@ import {
 import { MechanicsService } from './mechanics.service';
 import { CreateMechanicDto } from './dto/create-mechanic.dto';
 import { UpdateMechanicDto } from './dto/update-mechanic.dto';
+import { ParseUuidPipe } from 'src/common/pipes/parse-uuid/parse-uuid.pipe';
 
 @Controller('mechanics')
 export class MechanicsController {
@@ -26,20 +27,20 @@ export class MechanicsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUuidPipe) id: string) {
     return this.mechanicsService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUuidPipe) id: string,
     @Body() updateMechanicDto: UpdateMechanicDto,
   ) {
     return this.mechanicsService.update(id, updateMechanicDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUuidPipe) id: string) {
     return this.mechanicsService.remove(id);
   }
 }

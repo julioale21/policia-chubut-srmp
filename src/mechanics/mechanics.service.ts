@@ -1,14 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMechanicDto } from './dto/create-mechanic.dto';
 import { UpdateMechanicDto } from './dto/update-mechanic.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mechanic } from './entities/mechanic.entity';
 import { Repository } from 'typeorm';
-import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class MechanicsService {
@@ -32,9 +27,6 @@ export class MechanicsService {
   }
 
   async findOne(id: string) {
-    if (!isUUID(id)) {
-      throw new UnprocessableEntityException('Invalid UUID');
-    }
     const mechanic = await this.mechanicRepository.findOne({ where: { id } });
     if (!mechanic) {
       throw new NotFoundException(`Mechanic with id ${id} not found`);
@@ -43,9 +35,6 @@ export class MechanicsService {
   }
 
   async update(id: string, updateMechanicDto: UpdateMechanicDto) {
-    if (!isUUID(id)) {
-      throw new UnprocessableEntityException('Invalid UUID');
-    }
     try {
       const mechanic = await this.mechanicRepository.findOne({ where: { id } });
       if (!mechanic) {
@@ -59,9 +48,6 @@ export class MechanicsService {
   }
 
   async remove(id: string) {
-    if (!isUUID(id)) {
-      throw new UnprocessableEntityException('Invalid UUID');
-    }
     try {
       const mechanic = await this.mechanicRepository.find({ where: { id } });
       if (!mechanic) {

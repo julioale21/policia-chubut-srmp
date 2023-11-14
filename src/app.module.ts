@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DependenciesModule } from './dependencies/dependencies.module';
 import { MechanicsModule } from './mechanics/mechanics.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { MechanicsModule } from './mechanics/mechanics.module';
     DependenciesModule,
 
     MechanicsModule,
+
+    CommonModule,
   ],
   controllers: [],
   providers: [],

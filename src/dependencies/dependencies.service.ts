@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDependencyDto } from './dto/create-dependency.dto';
 import { UpdateDependencyDto } from './dto/update-dependency.dto';
 import { Dependency } from './entities/dependency.entity';
@@ -56,10 +52,6 @@ export class DependenciesService {
   }
 
   async update(id: string, updateDependencyDto: UpdateDependencyDto) {
-    if (!isUUID(id)) {
-      throw new UnprocessableEntityException('Invalid UUID');
-    }
-
     const dependency = await this.dependencyRepository.findOne({
       where: { id },
     });
@@ -73,10 +65,6 @@ export class DependenciesService {
   }
 
   async remove(id: string) {
-    if (!isUUID(id)) {
-      throw new UnprocessableEntityException('Invalid UUID');
-    }
-
     const dependency = await this.dependencyRepository.findOne({
       where: { id },
     });
