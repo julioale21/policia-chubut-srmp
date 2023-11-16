@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DependenciesModule } from './dependencies/dependencies.module';
 import { MechanicsModule } from './mechanics/mechanics.module';
 import { CommonModule } from './common/common.module';
+import { MovilesModule } from './moviles/moviles.module';
+import { IngressModule } from './ingress/ingress.module';
+import { EquipementsModule } from './equipements/equipements.module';
 
 @Module({
   imports: [
@@ -27,6 +30,12 @@ import { CommonModule } from './common/common.module';
     MechanicsModule,
 
     CommonModule,
+
+    MovilesModule,
+
+    IngressModule,
+
+    EquipementsModule,
   ],
   controllers: [],
   providers: [],

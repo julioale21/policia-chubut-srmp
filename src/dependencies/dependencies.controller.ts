@@ -6,11 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { DependenciesService } from './dependencies.service';
 import { CreateDependencyDto } from './dto/create-dependency.dto';
 import { UpdateDependencyDto } from './dto/update-dependency.dto';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid/parse-uuid.pipe';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('dependencies')
 export class DependenciesController {
@@ -22,8 +24,8 @@ export class DependenciesController {
   }
 
   @Get()
-  findAll() {
-    return this.dependenciesService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.dependenciesService.findAll(paginationDto);
   }
 
   @Get(':term')
