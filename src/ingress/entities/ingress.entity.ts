@@ -3,6 +3,7 @@ import { Movile } from 'src/moviles/entities/movile.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -16,8 +17,7 @@ export class Ingress {
   @Column('date')
   date: Date;
 
-  @Column('varchar', {
-    length: 50,
+  @Column('numeric', {
     nullable: false,
   })
   kilometers: number;
@@ -32,14 +32,16 @@ export class Ingress {
   })
   order_number: string;
 
-  @Column('varchar', {
+  @Column('int', {
     nullable: false,
   })
   fuel_level: number;
 
   @ManyToOne(() => Movile, (movile) => movile.ingress)
+  @JoinColumn()
   movile: Movile;
 
   @OneToOne(() => Equipement, (equipement) => equipement.ingress)
+  @JoinColumn()
   equipement: Equipement;
 }

@@ -6,10 +6,13 @@ import {
   // Patch,
   Param,
   ParseUUIDPipe,
+  Delete,
+  Patch,
   // Delete,
 } from '@nestjs/common';
 import { IngressService } from './ingress.service';
 import { CreateIngressDto } from './dto/create-ingress.dto';
+import { UpdateIngressDto } from './dto/update-ingress.dto';
 // import { UpdateIngressDto } from './dto/update-ingress.dto';
 
 @Controller('ingress')
@@ -31,13 +34,13 @@ export class IngressController {
     return this.ingressService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateIngressDto: UpdateIngressDto) {
-  //   return this.ingressService.update(+id, updateIngressDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateIngressDto: UpdateIngressDto) {
+    return this.ingressService.update(id, updateIngressDto);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.ingressService.remove(+id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.ingressService.remove(id);
+  }
 }
