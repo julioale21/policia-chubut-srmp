@@ -5,6 +5,7 @@ import {
   Body,
   // Patch,
   Param,
+  ParseUUIDPipe,
   // Delete,
 } from '@nestjs/common';
 import { IngressService } from './ingress.service';
@@ -26,8 +27,8 @@ export class IngressController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ingressService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.ingressService.findOne(id);
   }
 
   // @Patch(':id')
