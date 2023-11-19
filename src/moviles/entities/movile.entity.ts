@@ -9,19 +9,25 @@ import {
 
 import { Dependency } from 'src/dependencies/entities/dependency.entity';
 import { Ingress } from 'src/ingress/entities/ingress.entity';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 @Entity()
+@ObjectType()
 export class Movile {
   @PrimaryGeneratedColumn('uuid')
+  @Field(() => String)
   id: string;
 
   @Column('varchar', { unique: true, nullable: false })
+  @Field(() => String, { nullable: false })
   domain: string;
 
   @Column('varchar', { nullable: false })
+  @Field(() => String, { nullable: false })
   brand: string;
 
   @Column('varchar', { nullable: false })
+  @Field(() => String, { nullable: false })
   model: string;
 
   @OneToOne(() => Dependency)
@@ -29,5 +35,6 @@ export class Movile {
   dependency: Dependency;
 
   @OneToMany(() => Ingress, (ingress) => ingress.movile)
+  @Field(() => [Ingress], { nullable: true })
   ingress: Ingress[];
 }

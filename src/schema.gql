@@ -1,0 +1,90 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Equipement {
+  id: String
+
+  """Crique"""
+  car_jack: Boolean
+
+  """Llave de rueda"""
+  weel_wrench: Boolean!
+
+  """Matafuego"""
+  fire_stinguisher: Boolean!
+
+  """Chaleco Reflectivo"""
+  reflective_vest: Boolean!
+
+  """Balizas"""
+  beacons: Boolean!
+
+  """Equipo de comunicaciones"""
+  communication_equipment: Boolean!
+
+  """Antena de radio"""
+  radio_antenna: Boolean!
+
+  """Radio Estero"""
+  stereo: Boolean!
+
+  """Linea para remolcar"""
+  trailer_line: Boolean!
+
+  """Rueda de auxilio"""
+  spare_wheel: Boolean!
+
+  """Observaciones"""
+  observations: String
+  ingress: Ingress
+}
+
+type Ingress {
+  id: String!
+  date: DateTime!
+  kilometers: Int!
+
+  """Descripcion de reparacion"""
+  repair_description: String
+  order_number: String!
+  fuel_level: Int!
+  movile: Movile!
+  equipement: Equipement
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Movile {
+  id: String!
+  domain: String!
+  brand: String!
+  model: String!
+  ingress: [Ingress!]
+}
+
+type Query {
+  getAllIngress: [Ingress!]!
+  getAllEquipements: [Equipement!]!
+}
+
+type Mutation {
+  createEquipement(createEquipementData: CreateEquipementDto!): Equipement!
+}
+
+input CreateEquipementDto {
+  car_jack: Boolean = false
+  weel_wrench: Boolean = false
+  fire_stinguisher: Boolean = false
+  reflective_vest: Boolean = false
+  beacons: Boolean = false
+  communication_equipment: Boolean = false
+  radio_antenna: Boolean = false
+  stereo: Boolean = false
+  trailer_line: Boolean = false
+  spare_wheel: Boolean = false
+  observations: String
+}

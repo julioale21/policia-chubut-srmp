@@ -5,10 +5,11 @@ import { IngressController } from './ingress.controller';
 import { Ingress } from './entities/ingress.entity';
 import { MovilesModule } from 'src/moviles/moviles.module';
 import { EquipementsModule } from 'src/equipements/equipements.module';
+import { IngressResolver } from './ingress.resolver';
 
 @Module({
   controllers: [IngressController],
-  providers: [IngressService],
+  providers: [IngressService, IngressResolver],
   imports: [
     TypeOrmModule.forFeature([Ingress]),
     MovilesModule,

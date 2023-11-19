@@ -7,6 +7,9 @@ import { CommonModule } from './common/common.module';
 import { MovilesModule } from './moviles/moviles.module';
 import { IngressModule } from './ingress/ingress.module';
 import { EquipementsModule } from './equipements/equipements.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -23,6 +26,11 @@ import { EquipementsModule } from './equipements/equipements.module';
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
       synchronize: true,
+    }),
+
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
 
     DependenciesModule,

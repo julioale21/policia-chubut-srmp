@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateIngressDto } from './dto/create-ingress.dto';
 // import { UpdateIngressDto } from './dto/update-ingress.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -43,7 +47,9 @@ export class IngressService {
   }
 
   async findAll(): Promise<Ingress[]> {
-    return this.ingressRepository.find();
+    return this.ingressRepository.find({
+      relations: ['movile', 'equipement'],
+    });
   }
 
   async findOne(id: string): Promise<Ingress> {
