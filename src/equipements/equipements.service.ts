@@ -4,6 +4,7 @@ import { CreateEquipementDto } from './dto/create-equipement.dto';
 import { Equipement } from './entities/equipement.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UpdateEquipementDto } from './dto/update-equipement.dto';
 
 @Injectable()
 export class EquipementsService {
@@ -32,11 +33,29 @@ export class EquipementsService {
     return equipement;
   }
 
-  // update(id: string, updateEquipementDto: UpdateEquipementDto) {
-  //   return `This action updates a #${id} equipement`;
-  // }
+  async update(id: string, updateEquipementDto: UpdateEquipementDto) {
+    const equipement = await this.equipementRepository.findOne({
+      where: { id },
+    });
 
-  // remove(id: string) {
-  //   return `This action removes a #${id} equipement`;
-  // }
+    if (!equipement) throw new NotFoundException('Equipement not found');
+
+    const updatedEquipement = await this.equipementRepository.save({
+      ...equipement,
+      ...updateEquipementDto,
+    });
+
+    return updatedEquipement;
+  }
+
+  async remove(id: string) {
+    const equipement = await this.equipementRepository.findOne({
+      where: { id },
+    });
+
+    if (!equipement) throw new NotFoundException('Equipement not found');
+    await this.equipementRepository.delete(equipement.id);
+
+    return 'Equipement deleted';
+  }
 }

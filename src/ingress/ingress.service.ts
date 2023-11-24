@@ -2,17 +2,17 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateIngressDto } from './dto/create-ingress.dto';
-// import { UpdateIngressDto } from './dto/update-ingress.dto';
+import { UpdateIngressDto } from './dto/update-ingress.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ingress } from './entities/ingress.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { MovilesService } from 'src/moviles/moviles.service';
-import { EquipementsService } from 'src/equipements/equipements.service';
 import { Movile } from 'src/moviles/entities/movile.entity';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
-import { UpdateIngressDto } from './dto/update-ingress.dto';
+import { EquipementIngress } from 'src/equipement-ingress/entities/equipement-ingress.entity';
 
 @Injectable()
 export class IngressService {
@@ -21,30 +21,53 @@ export class IngressService {
     private readonly ingressRepository: Repository<Ingress>,
 
     private readonly movilesService: MovilesService,
-    private readonly equipementsService: EquipementsService,
+    private datasource: DataSource,
   ) {}
 
   async create(createIngressDto: CreateIngressDto) {
-    const { movile_id, equipement_id } = createIngressDto;
+    try {
+      return await this.datasource.transaction(async (entityManager) => {
+        const { movile_id, equipements } = createIngressDto;
 
-    const movile: Movile = await this.movilesService.findOne(movile_id);
-    if (!movile) throw new BadRequestException('Movil not found');
+        const movile: Movile = await entityManager.findOne(Movile, {
+          where: { id: movile_id },
+        });
+        if (!movile) throw new BadRequestException('Movil not found');
 
-    const equipement: Equipement =
-      await this.equipementsService.findOne(equipement_id);
+        const ingress = this.ingressRepository.create({
+          ...createIngressDto,
+          date: createIngressDto.date
+            ? new Date(createIngressDto.date)
+            : new Date(),
+          movile: movile,
+        });
 
-    if (!equipement) throw new BadRequestException('Equipement not found');
+        const savedIngress = await entityManager.save(ingress);
 
-    const ingress = this.ingressRepository.create({
-      ...createIngressDto,
-      date: createIngressDto.date
-        ? new Date(createIngressDto.date)
-        : new Date(),
-      movile: movile,
-      equipement: equipement,
-    });
+        for (const equipId of equipements) {
+          const equipement = await entityManager.findOne(Equipement, {
+            where: { id: equipId },
+          });
+          if (!equipement)
+            throw new BadRequestException('Equipement not found');
 
-    return await this.ingressRepository.save(ingress);
+          const equipementIngress = entityManager.create(EquipementIngress, {
+            equipement,
+            ingress: savedIngress,
+          });
+          await entityManager.save(equipementIngress);
+        }
+
+        return savedIngress;
+      });
+    } catch (error) {
+      if (
+        error.message.includes('duplicate key value violates unique constraint')
+      ) {
+        throw new UnprocessableEntityException('Duplicated equipement');
+      }
+      throw new UnprocessableEntityException(error.message);
+    }
   }
 
   async findAll(): Promise<Ingress[]> {
@@ -73,14 +96,6 @@ export class IngressService {
       ingress.movile = movile;
     }
 
-    if (updateIngressDto.equipement_id) {
-      const equipement = await this.equipementsService.findOne(
-        updateIngressDto.equipement_id,
-      );
-      if (!equipement) throw new BadRequestException('Equipement not found');
-      ingress.equipement = equipement;
-    }
-
     this.ingressRepository.merge(ingress, updateIngressDto);
 
     return await this.ingressRepository.save(ingress);
@@ -92,6 +107,6 @@ export class IngressService {
     if (!ingress) throw new NotFoundException('Ingress not found');
 
     await this.ingressRepository.remove(ingress);
-    return `This action removes a #${id} ingress`;
+    return `Removed ingress with id:  #${id}`;
   }
 }

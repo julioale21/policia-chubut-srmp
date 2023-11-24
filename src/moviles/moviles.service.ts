@@ -25,6 +25,12 @@ export class MovilesService {
     let dependency: Dependency;
     const { dependencyId, dependencyDescription } = createMovileDto;
 
+    if (!dependencyId && !dependencyDescription) {
+      throw new UnprocessableEntityException(
+        'Dependency id or description is required',
+      );
+    }
+
     if (dependencyId) {
       if (!isUUID(dependencyId)) {
         throw new UnprocessableEntityException('Dependency id is not valid');
@@ -35,34 +41,21 @@ export class MovilesService {
       if (!dependency) {
         throw new NotFoundException('Dependency not found');
       }
+    } else if (dependencyDescription) {
+      dependency = await this.dependenciesService.create({
+        name: dependencyDescription,
+      });
     }
 
     try {
-      if (dependencyDescription) {
-        dependency = await this.dependenciesService.findOne(
-          dependencyDescription,
-        );
-
-        if (!dependency) {
-          dependency = await this.dependenciesService.create({
-            name: dependencyDescription,
-          });
-        }
-      } else {
-        dependency = await this.dependenciesService.create({
-          name: dependencyDescription,
-        });
-      }
-
       const movile = this.movileRepository.create({
         ...createMovileDto,
         dependency,
       });
 
-      await this.movileRepository.save(movile);
-      return movile;
+      return await this.movileRepository.save(movile);
     } catch (error) {
-      Logger.error(error);
+      Logger.error(error.message);
       throw new UnprocessableEntityException(error.message);
     }
   }

@@ -1,11 +1,11 @@
-import { Equipement } from 'src/equipements/entities/equipement.entity';
+import { EquipementIngress } from 'src/equipement-ingress/entities/equipement-ingress.entity';
 import { Movile } from 'src/moviles/entities/movile.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -41,7 +41,9 @@ export class Ingress {
   @JoinColumn()
   movile: Movile;
 
-  @OneToOne(() => Equipement, (equipement) => equipement.ingress)
-  @JoinColumn()
-  equipement: Equipement;
+  @OneToMany(
+    () => EquipementIngress,
+    (equipementIngress) => equipementIngress.ingress,
+  )
+  equipementIngress: EquipementIngress;
 }

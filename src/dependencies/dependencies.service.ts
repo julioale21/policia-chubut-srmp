@@ -19,7 +19,6 @@ export class DependenciesService {
     try {
       const dependency = this.dependencyRepository.create(createDependencyDto);
       await this.dependencyRepository.save(dependency);
-      console.log('dependency', dependency);
       return dependency;
     } catch (error) {
       this.logger.error(error.message);

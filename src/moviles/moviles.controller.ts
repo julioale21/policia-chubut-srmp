@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { MovilesService } from './moviles.service';
 import { CreateMovileDto } from './dto/create-movile.dto';
@@ -26,17 +27,20 @@ export class MovilesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.movilesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMovileDto: UpdateMovileDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateMovileDto: UpdateMovileDto,
+  ) {
     return this.movilesService.update(id, updateMovileDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.movilesService.remove(id);
   }
 }

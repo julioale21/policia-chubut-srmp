@@ -7,6 +7,7 @@ import { CommonModule } from './common/common.module';
 import { MovilesModule } from './moviles/moviles.module';
 import { IngressModule } from './ingress/ingress.module';
 import { EquipementsModule } from './equipements/equipements.module';
+import { EquipementIngressModule } from './equipement-ingress/equipement-ingress.module';
 
 @Module({
   imports: [
@@ -36,6 +37,8 @@ import { EquipementsModule } from './equipements/equipements.module';
     IngressModule,
 
     EquipementsModule,
+
+    EquipementIngressModule,
   ],
   controllers: [],
   providers: [],

@@ -1,6 +1,7 @@
 import {
   IsOptional,
   IsString,
+  IsUUID,
   IsUppercase,
   MaxLength,
   MinLength,
@@ -21,6 +22,7 @@ export class CreateMovileDto {
 
   @IsString()
   @IsOptional()
+  @IsUUID()
   dependencyId: string;
 
   @IsString()
