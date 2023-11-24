@@ -8,6 +8,8 @@ import { MovilesModule } from './moviles/moviles.module';
 import { IngressModule } from './ingress/ingress.module';
 import { EquipementsModule } from './equipements/equipements.module';
 import { EquipementIngressModule } from './equipement-ingress/equipement-ingress.module';
+import { EgressModule } from './egress/egress.module';
+import { ProviderModule } from './provider/provider.module';
 
 @Module({
   imports: [
@@ -39,6 +41,10 @@ import { EquipementIngressModule } from './equipement-ingress/equipement-ingress
     EquipementsModule,
 
     EquipementIngressModule,
+
+    EgressModule,
+
+    ProviderModule,
   ],
   controllers: [],
   providers: [],

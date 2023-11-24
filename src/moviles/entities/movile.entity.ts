@@ -9,6 +9,7 @@ import {
 
 import { Dependency } from 'src/dependencies/entities/dependency.entity';
 import { Ingress } from 'src/ingress/entities/ingress.entity';
+import { Egress } from 'src/egress/entities/egress.entity';
 
 @Entity()
 export class Movile {
@@ -30,4 +31,7 @@ export class Movile {
 
   @OneToMany(() => Ingress, (ingress) => ingress.movile)
   ingress: Ingress[];
+
+  @OneToMany(() => Egress, (egress) => egress.movile)
+  egress: Egress;
 }

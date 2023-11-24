@@ -14,7 +14,10 @@ export class Ingress {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('date')
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   date: Date;
 
   @Column('numeric', {

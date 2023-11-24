@@ -7,6 +7,7 @@ import { Mechanic } from './entities/mechanic.entity';
 @Module({
   controllers: [MechanicsController],
   providers: [MechanicsService],
+  exports: [MechanicsService],
   imports: [TypeOrmModule.forFeature([Mechanic])],
 })
 export class MechanicsModule {}
