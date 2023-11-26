@@ -11,6 +11,8 @@ import { EquipementIngressModule } from './equipement-ingress/equipement-ingress
 import { EgressModule } from './egress/egress.module';
 import { ProviderModule } from './provider/provider.module';
 import { SparePartOrderModule } from './spare_part_order/spare_part_order.module';
+import { OrderLineModule } from './order_line/order_line.module';
+import { SparePartModule } from './spare_part/spare_part.module';
 
 @Module({
   imports: [
@@ -48,6 +50,10 @@ import { SparePartOrderModule } from './spare_part_order/spare_part_order.module
     ProviderModule,
 
     SparePartOrderModule,
+
+    OrderLineModule,
+
+    SparePartModule,
   ],
   controllers: [],
   providers: [],

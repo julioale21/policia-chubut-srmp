@@ -1,5 +1,12 @@
+import { OrderLine } from 'src/order_line/entities/order_line.entity';
 import { Provider } from 'src/provider/entities/provider.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class SparePartOrder {
@@ -20,4 +27,7 @@ export class SparePartOrder {
 
   @ManyToOne(() => Provider)
   provider: Provider;
+
+  @OneToMany(() => OrderLine, (orderLine) => orderLine.sparePartOrder)
+  orderLine: OrderLine;
 }
