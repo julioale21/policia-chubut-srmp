@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateEquipementDto } from './dto/create-equipement.dto';
 // import { UpdateEquipementDto } from './dto/update-equipement.dto';
 import { Equipement } from './entities/equipement.entity';
@@ -14,9 +19,18 @@ export class EquipementsService {
   ) {}
 
   async create(createEquipementDto: CreateEquipementDto) {
-    const equipement = this.equipementRepository.create(createEquipementDto);
-
-    return await this.equipementRepository.save(equipement);
+    try {
+      const equipement = this.equipementRepository.create(createEquipementDto);
+      await this.equipementRepository.save(equipement);
+      return equipement;
+    } catch (error) {
+      if (
+        error.message.includes('duplicate key value violates unique constraint')
+      ) {
+        throw new UnprocessableEntityException('Equipement already exists');
+      }
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   async findAll() {

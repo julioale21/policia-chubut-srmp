@@ -18,7 +18,7 @@ export class SparePart {
   @Column('text', { array: true })
   compatibility_vehicle: string[];
 
-  @Column('numeric', { default: 0 })
+  @Column('float', { default: 0 })
   stock: number;
 
   @OneToMany(() => OrderLine, (orderLine) => orderLine.sparePart)
