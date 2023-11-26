@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { SparePartOrderService } from './spare_part_order.service';
 import { CreateSparePartOrderDto } from './dto/create-spare_part_order.dto';
 import { UpdateSparePartOrderDto } from './dto/update-spare_part_order.dto';
@@ -18,17 +27,20 @@ export class SparePartOrderController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.sparePartOrderService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.sparePartOrderService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSparePartOrderDto: UpdateSparePartOrderDto) {
-    return this.sparePartOrderService.update(+id, updateSparePartOrderDto);
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateSparePartOrderDto: UpdateSparePartOrderDto,
+  ) {
+    return this.sparePartOrderService.update(id, updateSparePartOrderDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.sparePartOrderService.remove(+id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.sparePartOrderService.remove(id);
   }
 }

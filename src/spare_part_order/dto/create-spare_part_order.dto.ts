@@ -32,5 +32,5 @@ export class CreateSparePartOrderDto {
 
   @IsString()
   @IsOptional()
-  providerId: string;
+  provider_id: string;
 }
