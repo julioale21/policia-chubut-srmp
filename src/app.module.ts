@@ -13,6 +13,8 @@ import { ProviderModule } from './provider/provider.module';
 import { SparePartOrderModule } from './spare_part_order/spare_part_order.module';
 import { OrderLineModule } from './order_line/order_line.module';
 import { SparePartModule } from './spare_part/spare_part.module';
+import { RoleModule } from './role/role.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -54,6 +56,10 @@ import { SparePartModule } from './spare_part/spare_part.module';
     OrderLineModule,
 
     SparePartModule,
+
+    RoleModule,
+
+    UserModule,
   ],
   controllers: [],
   providers: [],
