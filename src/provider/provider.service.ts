@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,9 +17,18 @@ export class ProviderService {
   ) {}
 
   async create(createProviderDto: CreateProviderDto) {
-    const provider = this.providerRepository.create(createProviderDto);
+    try {
+      const provider = this.providerRepository.create(createProviderDto);
 
-    return await this.providerRepository.save(provider);
+      return await this.providerRepository.save(provider);
+    } catch (error) {
+      console.error(error);
+      if (error.message.includes('duplicate key value violates unique')) {
+        throw new NotFoundException('Provider already exists');
+      }
+
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   async findAll() {

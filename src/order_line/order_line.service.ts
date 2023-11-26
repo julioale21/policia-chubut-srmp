@@ -33,6 +33,14 @@ export class OrderLineService {
           createOrderLineDto.spare_part_order_id,
         );
 
+        if (sparePartOrder.type == 'out') {
+          sparePart.stock -= createOrderLineDto.quantity;
+        } else {
+          sparePart.stock += createOrderLineDto.quantity;
+        }
+
+        await entityManager.save(sparePart);
+
         const orderLine = entityManager.create(OrderLine, {
           ...createOrderLineDto,
           sparePart,
