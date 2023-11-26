@@ -71,9 +71,14 @@ export class IngressService {
   }
 
   async findAll(): Promise<Ingress[]> {
-    return this.ingressRepository.find({
-      relations: ['movile', 'equipement'],
-    });
+    try {
+      return this.ingressRepository.find({
+        relations: ['movile'],
+      });
+    } catch (error) {
+      console.log(error.message);
+      throw new UnprocessableEntityException(error.message);
+    }
   }
 
   async findOne(id: string): Promise<Ingress> {

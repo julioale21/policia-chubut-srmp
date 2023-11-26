@@ -86,6 +86,8 @@ export class MovilesService {
       throw new NotFoundException('Movile not found');
     }
 
-    return await this.movileRepository.remove(movile);
+    await this.movileRepository.remove(movile);
+
+    return `Movile ${movile.id} deleted`;
   }
 }

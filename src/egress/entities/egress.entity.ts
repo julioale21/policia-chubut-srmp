@@ -1,4 +1,3 @@
-import { IsDate, IsOptional, IsString } from 'class-validator';
 import { Mechanic } from 'src/mechanics/entities/mechanic.entity';
 import { Movile } from 'src/moviles/entities/movile.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
@@ -9,13 +8,9 @@ export class Egress {
   id: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  @IsDate()
-  @IsOptional()
   date: Date;
 
   @Column()
-  @IsOptional()
-  @IsString()
   observations: string;
 
   @ManyToOne(() => Mechanic)

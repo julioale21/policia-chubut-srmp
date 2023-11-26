@@ -3,10 +3,10 @@ import {
   InternalServerErrorException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { Repository } from 'typeorm';
 import { CreateEgressDto } from './dto/create-egress.dto';
 import { UpdateEgressDto } from './dto/update-egress.dto';
 import { Egress } from './entities/egress.entity';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MovilesService } from 'src/moviles/moviles.service';
 import { MechanicsService } from 'src/mechanics/mechanics.service';
@@ -30,7 +30,7 @@ export class EgressService {
 
     const mechanic = await this.mechanicService.findOne(mechanic_id);
 
-    const egress = await this.egressRepository.create({
+    const egress = this.egressRepository.create({
       ...restData,
       movile,
       mechanic_boss,
