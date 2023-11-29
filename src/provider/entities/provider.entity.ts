@@ -6,7 +6,7 @@ export class Provider {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('text')
+  @Column('text', { unique: true })
   name: string;
 
   @OneToMany(() => SparePartOrder, (sparePartOrder) => sparePartOrder.provider)

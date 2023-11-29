@@ -13,7 +13,7 @@ export class SparePartOrder {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('text')
+  @Column('text', { unique: true })
   order_number: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -28,6 +28,8 @@ export class SparePartOrder {
   @ManyToOne(() => Provider)
   provider: Provider;
 
-  @OneToMany(() => OrderLine, (orderLine) => orderLine.sparePartOrder)
+  @OneToMany(() => OrderLine, (orderLine) => orderLine.sparePartOrder, {
+    cascade: true,
+  })
   orderLine: OrderLine;
 }

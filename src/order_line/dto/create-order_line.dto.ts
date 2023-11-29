@@ -1,13 +1,6 @@
-import {
-  IsDecimal,
-  IsNotEmpty,
-  IsPositive,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsNotEmpty, IsPositive, IsString, IsUUID } from 'class-validator';
 
 export class CreateOrderLineDto {
-  @IsDecimal()
   @IsNotEmpty()
   @IsPositive()
   quantity: number;

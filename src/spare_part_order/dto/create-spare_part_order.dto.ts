@@ -4,7 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Min,
+  MinLength,
 } from 'class-validator';
 
 export enum OrderType {
@@ -15,7 +15,7 @@ export enum OrderType {
 export class CreateSparePartOrderDto {
   @IsString()
   @IsNotEmpty()
-  @Min(1)
+  @MinLength(1)
   order_number: string;
 
   @IsDate()
