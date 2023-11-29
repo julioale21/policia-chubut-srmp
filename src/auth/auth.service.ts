@@ -1,4 +1,3 @@
-import { LoginUserDto } from './dto/login_user.dto';
 import {
   Injectable,
   NotFoundException,
@@ -7,8 +6,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create_user.dto';
-import { UpdateUserDto } from './dto/update_user.dto';
+import { CreateUserDto, UpdateUserDto, LoginUserDto } from './dto';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 // To simulate call to external API
 const usersDB = [
@@ -26,6 +26,7 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
@@ -81,6 +82,13 @@ export class AuthService {
       localUser = await this.updateUser(localUser.id, user);
     }
 
-    return localUser;
+    return {
+      user: localUser,
+      token: this.getJwtToken({ email }),
+    };
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    return this.jwtService.sign(payload);
   }
 }
