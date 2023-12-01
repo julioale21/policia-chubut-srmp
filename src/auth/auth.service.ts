@@ -84,7 +84,7 @@ export class AuthService {
 
     return {
       user: localUser,
-      token: this.getJwtToken({ email }),
+      token: this.getJwtToken({ id: localUser.id }),
     };
   }
 
