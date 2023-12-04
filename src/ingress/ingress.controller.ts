@@ -9,12 +9,16 @@ import {
 } from '@nestjs/common';
 import { IngressService } from './ingress.service';
 import { CreateIngressDto } from './dto/create-ingress.dto';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @Controller('ingress')
+@Auth()
 export class IngressController {
   constructor(private readonly ingressService: IngressService) {}
 
   @Post()
+  @Auth(ValidRoles.admin)
   create(@Body() createIngressDto: CreateIngressDto) {
     return this.ingressService.create(createIngressDto);
   }
@@ -35,6 +39,7 @@ export class IngressController {
   // }
 
   @Delete(':id')
+  @Auth(ValidRoles.supeUser)
   remove(@Param('id') id: string) {
     return this.ingressService.remove(id);
   }

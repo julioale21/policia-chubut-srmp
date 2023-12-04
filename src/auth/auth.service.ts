@@ -8,7 +8,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto, UpdateUserDto, LoginUserDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtPayload } from './interfaces/';
 
 // To simulate call to external API
 const usersDB = [
@@ -84,7 +84,7 @@ export class AuthService {
 
     return {
       user: localUser,
-      token: this.getJwtToken({ email }),
+      token: this.getJwtToken({ id: localUser.id }),
     };
   }
 

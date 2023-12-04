@@ -6,6 +6,7 @@ import { Ingress } from './entities/ingress.entity';
 import { MovilesModule } from 'src/moviles/moviles.module';
 import { EquipementsModule } from 'src/equipements/equipements.module';
 import { EquipementIngressModule } from 'src/equipement-ingress/equipement-ingress.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [IngressController],
@@ -14,6 +15,7 @@ import { EquipementIngressModule } from 'src/equipement-ingress/equipement-ingre
     TypeOrmModule.forFeature([Ingress]),
     MovilesModule,
     EquipementsModule,
+    AuthModule,
     forwardRef(() => EquipementIngressModule),
   ],
   exports: [IngressService],
