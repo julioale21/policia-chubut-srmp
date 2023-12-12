@@ -1,4 +1,5 @@
 import {
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
@@ -8,6 +9,11 @@ import {
 } from 'class-validator';
 
 export class CreateMovileDto {
+  @IsString()
+  @MinLength(3)
+  @IsNotEmpty()
+  internal_register: string;
+
   @IsString()
   @MinLength(6)
   @MaxLength(8)

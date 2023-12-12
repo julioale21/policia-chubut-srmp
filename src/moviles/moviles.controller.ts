@@ -11,7 +11,9 @@ import {
 import { MovilesService } from './moviles.service';
 import { CreateMovileDto } from './dto/create-movile.dto';
 import { UpdateMovileDto } from './dto/update-movile.dto';
+import { Auth } from 'src/auth/decorators';
 
+@Auth()
 @Controller('moviles')
 export class MovilesController {
   constructor(private readonly movilesService: MovilesService) {}

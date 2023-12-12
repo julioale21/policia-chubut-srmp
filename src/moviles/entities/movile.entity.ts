@@ -17,6 +17,9 @@ export class Movile {
   id: string;
 
   @Column('varchar', { unique: true, nullable: false })
+  internal_register: string;
+
+  @Column('varchar', { unique: true, nullable: false })
   domain: string;
 
   @Column('varchar', { nullable: false })
