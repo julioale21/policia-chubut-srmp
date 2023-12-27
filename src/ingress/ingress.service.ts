@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -70,10 +71,16 @@ export class IngressService {
     }
   }
 
-  async findAll(): Promise<Ingress[]> {
+  async findAll(page: number = 1, limit: number = 10): Promise<Ingress[]> {
     try {
+      const offset = (page - 1) * limit;
       return this.ingressRepository.find({
         relations: ['movile'],
+        order: {
+          date: 'DESC',
+        },
+        skip: offset,
+        take: limit,
       });
     } catch (error) {
       console.log(error.message);
@@ -113,5 +120,15 @@ export class IngressService {
 
     await this.ingressRepository.remove(ingress);
     return `Removed ingress with id:  #${id}`;
+  }
+
+  async deleteAllIngresses() {
+    const query = this.ingressRepository.createQueryBuilder('ingress');
+
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }

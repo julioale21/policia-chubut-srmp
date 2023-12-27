@@ -14,6 +14,7 @@ import { SparePartOrderModule } from './spare_part_order/spare_part_order.module
 import { OrderLineModule } from './order_line/order_line.module';
 import { SparePartModule } from './spare_part/spare_part.module';
 import { AuthModule } from './auth/auth.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -57,6 +58,8 @@ import { AuthModule } from './auth/auth.module';
     SparePartModule,
 
     AuthModule,
+
+    SeedModule,
   ],
   controllers: [],
   providers: [],

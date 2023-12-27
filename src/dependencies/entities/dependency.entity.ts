@@ -1,4 +1,4 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Movile } from 'src/moviles/entities/movile.entity';
 
@@ -10,6 +10,6 @@ export class Dependency {
   @Column('varchar')
   name: string;
 
-  @OneToOne(() => Movile, (movile) => movile.dependency)
+  @OneToMany(() => Movile, (movile) => movile.dependency)
   movile: Movile;
 }

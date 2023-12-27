@@ -33,5 +33,5 @@ export class CreateMovileDto {
 
   @IsString()
   @IsOptional()
-  dependencyDescription: string;
+  dependencyDescription?: string;
 }

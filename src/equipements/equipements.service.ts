@@ -72,4 +72,14 @@ export class EquipementsService {
 
     return 'Equipement deleted';
   }
+
+  async deleteAllEquipements() {
+    const query = this.equipementRepository.createQueryBuilder('equipement');
+
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

@@ -2,9 +2,9 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToOne,
   JoinColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 
 import { Dependency } from 'src/dependencies/entities/dependency.entity';
@@ -28,7 +28,7 @@ export class Movile {
   @Column('varchar', { nullable: false })
   model: string;
 
-  @OneToOne(() => Dependency)
+  @ManyToOne(() => Dependency)
   @JoinColumn()
   dependency: Dependency;
 

@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateDependencyDto } from './dto/create-dependency.dto';
 import { UpdateDependencyDto } from './dto/update-dependency.dto';
 import { Dependency } from './entities/dependency.entity';
@@ -80,5 +85,15 @@ export class DependenciesService {
     }
 
     return await this.dependencyRepository.delete(dependency);
+  }
+
+  async deleteAllDependencies() {
+    const query = this.dependencyRepository.createQueryBuilder('dependency');
+
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }
