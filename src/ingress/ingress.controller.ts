@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { IngressService } from './ingress.service';
 import { CreateIngressDto } from './dto/create-ingress.dto';
@@ -24,8 +25,8 @@ export class IngressController {
   }
 
   @Get()
-  findAll() {
-    return this.ingressService.findAll();
+  findAll(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.ingressService.findAll(page, limit);
   }
 
   @Get(':id')

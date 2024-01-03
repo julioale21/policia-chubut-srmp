@@ -71,10 +71,13 @@ export class IngressService {
     }
   }
 
-  async findAll(page: number = 1, limit: number = 10): Promise<Ingress[]> {
+  async findAll(
+    page: number = 0,
+    limit: number = 10,
+  ): Promise<{ ingresses: Ingress[]; total: number }> {
     try {
-      const offset = (page - 1) * limit;
-      return this.ingressRepository.find({
+      const offset = page * limit;
+      const [data, total] = await this.ingressRepository.findAndCount({
         relations: ['movile'],
         order: {
           date: 'DESC',
@@ -82,6 +85,11 @@ export class IngressService {
         skip: offset,
         take: limit,
       });
+
+      return {
+        ingresses: data,
+        total,
+      };
     } catch (error) {
       console.log(error.message);
       throw new UnprocessableEntityException(error.message);
