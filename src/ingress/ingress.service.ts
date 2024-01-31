@@ -131,6 +131,9 @@ export class IngressService {
               })
               .orWhere('movile.domain LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
+              })
+              .orWhere('movile.internal_register LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
               });
           }),
         );
