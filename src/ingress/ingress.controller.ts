@@ -25,8 +25,12 @@ export class IngressController {
   }
 
   @Get()
-  findAll(@Query('page') page: number, @Query('limit') limit: number) {
-    return this.ingressService.findAll(page, limit);
+  findAll(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('searchTerm') searchTerm?: string,
+  ) {
+    return this.ingressService.findAllAndSearch(page, limit, searchTerm);
   }
 
   @Get(':id')

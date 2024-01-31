@@ -9,7 +9,7 @@ import { CreateIngressDto } from './dto/create-ingress.dto';
 import { UpdateIngressDto } from './dto/update-ingress.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ingress } from './entities/ingress.entity';
-import { DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { MovilesService } from 'src/moviles/moviles.service';
 import { Movile } from 'src/moviles/entities/movile.entity';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
@@ -85,6 +85,59 @@ export class IngressService {
         skip: offset,
         take: limit,
       });
+
+      return {
+        ingresses: data,
+        total,
+      };
+    } catch (error) {
+      console.log(error.message);
+      throw new UnprocessableEntityException(error.message);
+    }
+  }
+
+  async findAllAndSearch(
+    page: number = 0,
+    limit: number = 10,
+    searchTerm?: string,
+  ): Promise<{ ingresses: Ingress[]; total: number }> {
+    try {
+      const offset = page * limit;
+
+      const query = this.ingressRepository
+        .createQueryBuilder('ingress')
+        .leftJoinAndSelect('ingress.movile', 'movile')
+        .orderBy('ingress.date', 'DESC')
+        .skip(offset)
+        .take(limit);
+
+      if (searchTerm && searchTerm !== '' && searchTerm !== 'undefined') {
+        query.where(
+          new Brackets((qb) => {
+            qb.where("TO_CHAR(ingress.date, 'DD/MM') LIKE :searchTerm", {
+              searchTerm: `%${searchTerm}%`,
+            })
+              .orWhere('ingress.kilometers::text LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
+              })
+              .orWhere('ingress.repair_description LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
+              })
+              .orWhere('ingress.order_number LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
+              })
+              .orWhere('movile.brand LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
+              })
+              .orWhere('movile.domain LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
+              });
+          }),
+        );
+      }
+
+      const [data, total] = await query.getManyAndCount();
+      console.log({ data });
 
       return {
         ingresses: data,
