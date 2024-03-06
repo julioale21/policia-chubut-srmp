@@ -24,13 +24,35 @@ export class IngressController {
     return this.ingressService.create(createIngressDto);
   }
 
+  // @Get()
+  // findAll(
+  //   @Query('page') page: number = 0,
+  //   @Query('limit') limit: number = 10,
+  //   @Query('searchTerm') searchTerm?: string,
+  // ) {
+  //   console.log('page', page);
+  //   return this.ingressService.findAllAndSearch(page, limit, searchTerm);
+  // }
+
   @Get()
   findAll(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
     @Query('searchTerm') searchTerm?: string,
   ) {
-    return this.ingressService.findAllAndSearch(page, limit, searchTerm);
+    console.log('page', page);
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    const validPage = !isNaN(pageNumber) ? pageNumber : 0;
+    const validLimit = !isNaN(limitNumber) ? limitNumber : 10;
+
+    return this.ingressService.findAllAndSearch(
+      validPage,
+      validLimit,
+      searchTerm,
+    );
   }
 
   @Get(':id')

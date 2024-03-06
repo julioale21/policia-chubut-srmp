@@ -97,8 +97,8 @@ export class IngressService {
   }
 
   async findAllAndSearch(
-    page: number = 0,
-    limit: number = 10,
+    page: number,
+    limit: number,
     searchTerm?: string,
   ): Promise<{ ingresses: Ingress[]; total: number }> {
     try {
@@ -140,7 +140,6 @@ export class IngressService {
       }
 
       const [data, total] = await query.getManyAndCount();
-      console.log({ data });
 
       return {
         ingresses: data,
@@ -153,7 +152,14 @@ export class IngressService {
   }
 
   async findOne(id: string): Promise<Ingress> {
-    const ingress = await this.ingressRepository.findOne({ where: { id } });
+    const ingress = await this.ingressRepository.findOne({
+      where: { id },
+      relations: [
+        'movile',
+        'equipementIngress',
+        'equipementIngress.equipement',
+      ],
+    });
 
     if (!ingress) throw new NotFoundException('Ingress not found');
 
