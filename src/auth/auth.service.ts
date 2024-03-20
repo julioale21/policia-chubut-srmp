@@ -17,7 +17,7 @@ const usersDB = [
     name: 'JaRomero',
     email: 'julioromero@policia.chubut.gov.ar',
     password: '1234',
-    roles: ['admin', 'user'],
+    roles: ['admin', 'user', 'super-user'],
   },
 ];
 

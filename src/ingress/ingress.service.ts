@@ -79,6 +79,9 @@ export class IngressService {
       const offset = page * limit;
       const [data, total] = await this.ingressRepository.findAndCount({
         relations: ['movile'],
+        where: {
+          deletedAt: null,
+        },
         order: {
           date: 'DESC',
         },
@@ -96,6 +99,61 @@ export class IngressService {
     }
   }
 
+  // async findAllAndSearch(
+  //   page: number,
+  //   limit: number,
+  //   searchTerm?: string,
+  // ): Promise<{ ingresses: Ingress[]; total: number }> {
+  //   try {
+  //     const offset = page * limit;
+
+  //     const query = this.ingressRepository
+  //       .createQueryBuilder('ingress')
+  //       .leftJoinAndSelect('ingress.movile', 'movile')
+  //       .orderBy('ingress.date', 'DESC')
+  //       .skip(offset)
+  //       .take(limit);
+
+  //     if (searchTerm && searchTerm !== '' && searchTerm !== 'undefined') {
+  //       query.where(
+  //         new Brackets((qb) => {
+  //           qb.where("TO_CHAR(ingress.date, 'DD/MM') LIKE :searchTerm", {
+  //             searchTerm: `%${searchTerm}%`,
+  //           })
+  //             .orWhere('ingress.kilometers::text LIKE :searchTerm', {
+  //               searchTerm: `%${searchTerm}%`,
+  //             })
+  //             .orWhere('ingress.repair_description LIKE :searchTerm', {
+  //               searchTerm: `%${searchTerm}%`,
+  //             })
+  //             .orWhere('ingress.order_number LIKE :searchTerm', {
+  //               searchTerm: `%${searchTerm}%`,
+  //             })
+  //             .orWhere('movile.brand LIKE :searchTerm', {
+  //               searchTerm: `%${searchTerm}%`,
+  //             })
+  //             .orWhere('movile.domain LIKE :searchTerm', {
+  //               searchTerm: `%${searchTerm}%`,
+  //             })
+  //             .orWhere('movile.internal_register LIKE :searchTerm', {
+  //               searchTerm: `%${searchTerm}%`,
+  //             });
+  //         }),
+  //       );
+  //     }
+
+  //     const [data, total] = await query.getManyAndCount();
+
+  //     return {
+  //       ingresses: data,
+  //       total,
+  //     };
+  //   } catch (error) {
+  //     console.log(error.message);
+  //     throw new UnprocessableEntityException(error.message);
+  //   }
+  // }
+
   async findAllAndSearch(
     page: number,
     limit: number,
@@ -107,12 +165,13 @@ export class IngressService {
       const query = this.ingressRepository
         .createQueryBuilder('ingress')
         .leftJoinAndSelect('ingress.movile', 'movile')
+        .where('ingress.deletedAt IS NULL')
         .orderBy('ingress.date', 'DESC')
         .skip(offset)
         .take(limit);
 
       if (searchTerm && searchTerm !== '' && searchTerm !== 'undefined') {
-        query.where(
+        query.andWhere(
           new Brackets((qb) => {
             qb.where("TO_CHAR(ingress.date, 'DD/MM') LIKE :searchTerm", {
               searchTerm: `%${searchTerm}%`,
@@ -188,8 +247,10 @@ export class IngressService {
 
     if (!ingress) throw new NotFoundException('Ingress not found');
 
-    await this.ingressRepository.remove(ingress);
-    return `Removed ingress with id:  #${id}`;
+    ingress.deletedAt = new Date();
+    await this.ingressRepository.save(ingress);
+
+    return `Soft removed ingress with id: #${id}`;
   }
 
   async deleteAllIngresses() {

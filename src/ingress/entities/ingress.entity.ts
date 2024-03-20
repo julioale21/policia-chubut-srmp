@@ -40,6 +40,9 @@ export class Ingress {
   })
   fuel_level: number;
 
+  @Column({ nullable: true })
+  deletedAt: Date | null;
+
   @ManyToOne(() => Movile, (movile) => movile.ingress)
   @JoinColumn()
   movile: Movile;

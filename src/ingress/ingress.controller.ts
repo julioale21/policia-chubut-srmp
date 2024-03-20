@@ -40,8 +40,6 @@ export class IngressController {
     @Query('limit') limit: string,
     @Query('searchTerm') searchTerm?: string,
   ) {
-    console.log('page', page);
-
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
 
