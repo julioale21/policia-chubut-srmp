@@ -82,4 +82,6 @@ export class EquipementsService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  
 }

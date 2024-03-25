@@ -7,6 +7,7 @@ import { Movile } from 'src/moviles/entities/movile.entity';
 import { Dependency } from 'src/dependencies/entities/dependency.entity';
 import { IngressService } from 'src/ingress/ingress.service';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
+import { EquipementIngressService } from 'src/equipement-ingress/equipement-ingress.service';
 
 @Injectable()
 export class SeedService {
@@ -15,6 +16,7 @@ export class SeedService {
     private readonly dependenciesService: DependenciesService,
     private readonly movilesService: MovilesService,
     private readonly ingressService: IngressService,
+    private readonly equipementIngressService: EquipementIngressService,
   ) {}
 
   async runSeed() {
@@ -30,10 +32,11 @@ export class SeedService {
   }
 
   private async deleteTables() {
+    await this.equipementIngressService.deleteAllEquipementIngresses();
+    await this.ingressService.deleteAllIngresses();
     await this.equipementsService.deleteAllEquipements();
     await this.movilesService.deleteAllMoviles();
     await this.dependenciesService.deleteAllDependencies();
-    await this.ingressService.deleteAllIngresses();
   }
 
   private async createDependencies() {

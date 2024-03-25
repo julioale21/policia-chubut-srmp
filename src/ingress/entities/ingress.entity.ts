@@ -50,6 +50,7 @@ export class Ingress {
   @OneToMany(
     () => EquipementIngress,
     (equipementIngress) => equipementIngress.ingress,
+    { cascade: ['insert', 'update', 'remove'], onDelete: 'CASCADE' },
   )
-  equipementIngress: EquipementIngress;
+  equipementIngress: EquipementIngress[];
 }
