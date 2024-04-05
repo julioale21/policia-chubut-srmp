@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -17,6 +18,8 @@ import { EquipementIngress } from 'src/equipement-ingress/entities/equipement-in
 
 @Injectable()
 export class IngressService {
+  private readonly logger = new Logger('IngressService');
+
   constructor(
     @InjectRepository(Ingress)
     private readonly ingressRepository: Repository<Ingress>,
@@ -94,7 +97,7 @@ export class IngressService {
         total,
       };
     } catch (error) {
-      console.log(error.message);
+      this.logger.error(error.message);
       throw new UnprocessableEntityException(error.message);
     }
   }
@@ -150,7 +153,7 @@ export class IngressService {
         total,
       };
     } catch (error) {
-      console.log(error.message);
+      this.logger.error(error.message);
       throw new UnprocessableEntityException(error.message);
     }
   }
@@ -212,8 +215,6 @@ export class IngressService {
             },
           },
         );
-
-        console.log({ equipementIngressToRemove });
 
         if (equipementIngressToRemove) {
           await entityManager.delete(EquipementIngress, {
