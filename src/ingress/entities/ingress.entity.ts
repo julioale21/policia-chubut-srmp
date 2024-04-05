@@ -15,7 +15,7 @@ export class Ingress {
   id: string;
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamp with time zone',
     default: () => 'CURRENT_TIMESTAMP',
   })
   date: Date;

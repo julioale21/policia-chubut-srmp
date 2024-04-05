@@ -14,15 +14,11 @@ export class EquipementIngress {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Equipement, (equipement) => equipement.equipementIngress, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Equipement, (equipement) => equipement.equipementIngress)
   @JoinColumn()
   equipement: Equipement;
 
-  @ManyToOne(() => Ingress, (ingress) => ingress.equipementIngress, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Ingress, (ingress) => ingress.equipementIngress)
   @JoinColumn()
   ingress: Ingress;
 }

@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsDate,
   IsNotEmpty,
@@ -12,6 +13,7 @@ import {
 export class CreateIngressDto {
   @IsDate()
   @IsOptional()
+  @Transform(({ value }) => new Date(value))
   date: Date;
 
   @IsNumber()

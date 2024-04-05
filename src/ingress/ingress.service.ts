@@ -99,61 +99,6 @@ export class IngressService {
     }
   }
 
-  // async findAllAndSearch(
-  //   page: number,
-  //   limit: number,
-  //   searchTerm?: string,
-  // ): Promise<{ ingresses: Ingress[]; total: number }> {
-  //   try {
-  //     const offset = page * limit;
-
-  //     const query = this.ingressRepository
-  //       .createQueryBuilder('ingress')
-  //       .leftJoinAndSelect('ingress.movile', 'movile')
-  //       .orderBy('ingress.date', 'DESC')
-  //       .skip(offset)
-  //       .take(limit);
-
-  //     if (searchTerm && searchTerm !== '' && searchTerm !== 'undefined') {
-  //       query.where(
-  //         new Brackets((qb) => {
-  //           qb.where("TO_CHAR(ingress.date, 'DD/MM') LIKE :searchTerm", {
-  //             searchTerm: `%${searchTerm}%`,
-  //           })
-  //             .orWhere('ingress.kilometers::text LIKE :searchTerm', {
-  //               searchTerm: `%${searchTerm}%`,
-  //             })
-  //             .orWhere('ingress.repair_description LIKE :searchTerm', {
-  //               searchTerm: `%${searchTerm}%`,
-  //             })
-  //             .orWhere('ingress.order_number LIKE :searchTerm', {
-  //               searchTerm: `%${searchTerm}%`,
-  //             })
-  //             .orWhere('movile.brand LIKE :searchTerm', {
-  //               searchTerm: `%${searchTerm}%`,
-  //             })
-  //             .orWhere('movile.domain LIKE :searchTerm', {
-  //               searchTerm: `%${searchTerm}%`,
-  //             })
-  //             .orWhere('movile.internal_register LIKE :searchTerm', {
-  //               searchTerm: `%${searchTerm}%`,
-  //             });
-  //         }),
-  //       );
-  //     }
-
-  //     const [data, total] = await query.getManyAndCount();
-
-  //     return {
-  //       ingresses: data,
-  //       total,
-  //     };
-  //   } catch (error) {
-  //     console.log(error.message);
-  //     throw new UnprocessableEntityException(error.message);
-  //   }
-  // }
-
   async findAllAndSearch(
     page: number,
     limit: number,
@@ -226,20 +171,80 @@ export class IngressService {
   }
 
   async update(id: string, updateIngressDto: UpdateIngressDto) {
-    const ingress = await this.ingressRepository.findOne({ where: { id } });
+    const ingress = await this.ingressRepository.findOne({
+      where: { id },
+      relations: ['equipementIngress', 'equipementIngress.equipement'],
+    });
+
     if (!ingress) throw new NotFoundException('Ingress not found');
 
-    if (updateIngressDto.movile_id) {
-      const movile = await this.movilesService.findOne(
-        updateIngressDto.movile_id,
+    await this.datasource.transaction(async (entityManager) => {
+      if (updateIngressDto.movile_id) {
+        const movile = await this.movilesService.findOne(
+          updateIngressDto.movile_id,
+        );
+        if (!movile) throw new BadRequestException('Movil not found');
+        ingress.movile = movile;
+      }
+
+      const existingEquipementIds = ingress.equipementIngress.map(
+        (ei) => ei.equipement.id,
       );
-      if (!movile) throw new BadRequestException('Movil not found');
-      ingress.movile = movile;
-    }
 
-    this.ingressRepository.merge(ingress, updateIngressDto);
+      const newEquipementIds = updateIngressDto.equipements || [];
+      const equipementIdsToAdd = newEquipementIds.filter(
+        (id) => !existingEquipementIds.includes(id),
+      );
+      const equipementIdsToRemove = existingEquipementIds.filter(
+        (id) => !newEquipementIds.includes(id),
+      );
 
-    return await this.ingressRepository.save(ingress);
+      this.ingressRepository.merge(ingress, updateIngressDto);
+      const savedIngress = await entityManager.save(ingress);
+
+      for (const equipementId of equipementIdsToRemove) {
+        const equipementIngressToRemove = await entityManager.findOne(
+          EquipementIngress,
+          {
+            where: {
+              equipement: { id: equipementId },
+              ingress: { id: ingress.id },
+            },
+          },
+        );
+
+        console.log({ equipementIngressToRemove });
+
+        if (equipementIngressToRemove) {
+          await entityManager.delete(EquipementIngress, {
+            equipement: { id: equipementId },
+            ingress: ingress,
+          });
+        }
+      }
+
+      for (const equipId of equipementIdsToAdd) {
+        const equipement = await entityManager.findOne(Equipement, {
+          where: { id: equipId },
+        });
+        if (!equipement) throw new BadRequestException('Equipement not found');
+
+        const equipementIngress = entityManager.create(EquipementIngress, {
+          equipement: equipement,
+          ingress: savedIngress,
+        });
+        await entityManager.save(equipementIngress);
+      }
+    });
+
+    return await this.ingressRepository.findOne({
+      where: { id },
+      relations: [
+        'equipementIngress',
+        'equipementIngress.equipement',
+        'movile',
+      ],
+    });
   }
 
   async remove(id: string): Promise<string> {

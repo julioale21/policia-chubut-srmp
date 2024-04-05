@@ -7,11 +7,13 @@ import {
   ParseUUIDPipe,
   Delete,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { IngressService } from './ingress.service';
 import { CreateIngressDto } from './dto/create-ingress.dto';
 import { Auth } from 'src/auth/decorators';
 import { ValidRoles } from 'src/auth/interfaces';
+import { UpdateIngressDto } from './dto/update-ingress.dto';
 
 @Controller('ingress')
 @Auth()
@@ -58,10 +60,10 @@ export class IngressController {
     return this.ingressService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateIngressDto: UpdateIngressDto) {
-  //   return this.ingressService.update(id, updateIngressDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateIngressDto: UpdateIngressDto) {
+    return this.ingressService.update(id, updateIngressDto);
+  }
 
   @Delete(':id')
   @Auth(ValidRoles.supeUser)
