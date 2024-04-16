@@ -8,7 +8,7 @@ import {
 import { CreateMovileDto } from './dto/create-movile.dto';
 import { UpdateMovileDto } from './dto/update-movile.dto';
 import { DependenciesService } from 'src/dependencies/dependencies.service';
-import { Movile } from './entities/movile.entity';
+import { Movil } from './entities/movil.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Dependency } from 'src/dependencies/entities/dependency.entity';
@@ -18,11 +18,11 @@ import { isUUID } from 'class-validator';
 export class MovilesService {
   constructor(
     private readonly dependenciesService: DependenciesService,
-    @InjectRepository(Movile)
-    private readonly movileRepository: Repository<Movile>,
+    @InjectRepository(Movil)
+    private readonly movileRepository: Repository<Movil>,
   ) {}
 
-  async create(createMovileDto: CreateMovileDto): Promise<Movile> {
+  async create(createMovileDto: CreateMovileDto): Promise<Movil> {
     let dependency: Dependency;
     const { dependencyId, dependencyDescription } = createMovileDto;
 
@@ -49,47 +49,47 @@ export class MovilesService {
     }
 
     try {
-      const movile = this.movileRepository.create({
+      const movil = this.movileRepository.create({
         ...createMovileDto,
         dependency,
       });
 
-      return await this.movileRepository.save(movile);
+      return await this.movileRepository.save(movil);
     } catch (error) {
       Logger.error(error.message);
       throw new UnprocessableEntityException(error.message);
     }
   }
 
-  async findAll(): Promise<Movile[]> {
+  async findAll(): Promise<Movil[]> {
     return this.movileRepository.find({ relations: { dependency: true } });
   }
 
-  async findOne(id: string): Promise<Movile> {
+  async findOne(id: string): Promise<Movil> {
     return await this.movileRepository.findOne({ where: { id } });
   }
 
-  async update(id: string, updateMovileDto: UpdateMovileDto): Promise<Movile> {
-    const movile = await this.movileRepository.findOne({ where: { id } });
+  async update(id: string, updateMovileDto: UpdateMovileDto): Promise<Movil> {
+    const movil = await this.movileRepository.findOne({ where: { id } });
 
-    if (!movile) {
-      throw new NotFoundException('Movile not found');
+    if (!movil) {
+      throw new NotFoundException('Movil not found');
     }
 
-    Object.assign(movile, updateMovileDto);
-    return this.movileRepository.save(movile);
+    Object.assign(movil, updateMovileDto);
+    return this.movileRepository.save(movil);
   }
 
   async remove(id: string) {
-    const movile = await this.movileRepository.findOne({ where: { id } });
+    const movil = await this.movileRepository.findOne({ where: { id } });
 
-    if (!movile) {
-      throw new NotFoundException('Movile not found');
+    if (!movil) {
+      throw new NotFoundException('Movil not found');
     }
 
-    await this.movileRepository.remove(movile);
+    await this.movileRepository.remove(movil);
 
-    return `Movile ${movile.id} deleted`;
+    return `Movil ${movil.id} deleted`;
   }
 
   async deleteAllMoviles() {

@@ -12,7 +12,7 @@ import { Ingress } from 'src/ingress/entities/ingress.entity';
 import { Egress } from 'src/egress/entities/egress.entity';
 
 @Entity()
-export class Movile {
+export class Movil {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -32,9 +32,9 @@ export class Movile {
   @JoinColumn()
   dependency: Dependency;
 
-  @OneToMany(() => Ingress, (ingress) => ingress.movile)
+  @OneToMany(() => Ingress, (ingress) => ingress.movil)
   ingress: Ingress[];
 
-  @OneToMany(() => Egress, (egress) => egress.movile)
+  @OneToMany(() => Egress, (egress) => egress.movil)
   egress: Egress;
 }

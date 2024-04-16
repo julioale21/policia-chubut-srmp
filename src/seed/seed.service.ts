@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { DependenciesService } from 'src/dependencies/dependencies.service';
 import { EquipementsService } from 'src/equipements/equipements.service';
 import { initialData } from './data/seed-data';
-import { Movile } from 'src/moviles/entities/movile.entity';
+import { Movil } from 'src/moviles/entities/movil.entity';
 import { Dependency } from 'src/dependencies/entities/dependency.entity';
 import { IngressService } from 'src/ingress/ingress.service';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
@@ -75,22 +75,22 @@ export class SeedService {
     const createdMoviles = [];
     const mockMoviles = initialData.moviles;
 
-    for (const movile of mockMoviles) {
+    for (const movil of mockMoviles) {
       const randomIndex = Math.floor(Math.random() * dependencies.length);
       const selectedDependency = dependencies[randomIndex];
 
-      const newMovile: Movile = await this.movilesService.create({
-        ...(movile as Movile),
+      const newMovil: Movil = await this.movilesService.create({
+        ...(movil as Movil),
         dependencyId: selectedDependency.id,
       });
 
-      createdMoviles.push(newMovile);
+      createdMoviles.push(newMovil);
     }
 
     return createdMoviles;
   }
 
-  private async createIngresses(moviles: Movile[], equipements: Equipement[]) {
+  private async createIngresses(moviles: Movil[], equipements: Equipement[]) {
     const createdIngresses = [];
     const mockIngresses = initialData.ingresses;
 
@@ -99,7 +99,7 @@ export class SeedService {
       const selectedMovile = moviles[randomMovileIndex];
       const newIngress = await this.ingressService.create({
         ...ingress,
-        movile_id: selectedMovile.id,
+        movil_id: selectedMovile.id,
         equipements: equipements.map((equipement) => equipement.id),
       });
       createdIngresses.push(newIngress);

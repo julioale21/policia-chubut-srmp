@@ -1,6 +1,6 @@
 import { Ingress } from 'src/ingress/entities/ingress.entity';
 import { Mechanic } from 'src/mechanics/entities/mechanic.entity';
-import { Movile } from 'src/moviles/entities/movile.entity';
+import { Movil } from 'src/moviles/entities/movil.entity';
 import {
   Column,
   Entity,
@@ -26,8 +26,8 @@ export class Egress {
   @ManyToOne(() => Mechanic)
   mechanic: Mechanic;
 
-  @ManyToOne(() => Movile)
-  movile: Movile;
+  @ManyToOne(() => Movil)
+  movil: Movil;
 
   @OneToOne(() => Ingress)
   ingress: Ingress;
