@@ -21,11 +21,17 @@ export interface SeedIngress {
   fuel_level: number;
 }
 
+export interface SeedMechanic {
+  name: string;
+  surname: string;
+}
+
 interface SeedData {
   dependencies: SeedDependency[];
   equipements: SeedEquipement[];
   moviles: SeedMovile[];
   ingresses: SeedIngress[];
+  mechanics: SeedMechanic[];
 }
 
 export const initialData: SeedData = {
@@ -319,6 +325,89 @@ export const initialData: SeedData = {
       repair_description: 'Cambio luneta',
       order_number: '123477',
       fuel_level: 100,
+    },
+  ],
+
+  mechanics: [
+    {
+      name: 'Juan',
+      surname: 'Perez',
+    },
+    {
+      name: 'Pedro',
+      surname: 'Gonzalez',
+    },
+    {
+      name: 'Jose',
+      surname: 'Lopez',
+    },
+    {
+      name: 'Carlos',
+      surname: 'Gomez',
+    },
+    {
+      name: 'Jorge',
+      surname: 'Rodriguez',
+    },
+    {
+      name: 'Ricardo',
+      surname: 'Fernandez',
+    },
+    {
+      name: 'Roberto',
+      surname: 'Martinez',
+    },
+    {
+      name: 'Miguel',
+      surname: 'Sanchez',
+    },
+    {
+      name: 'Angel',
+      surname: 'Diaz',
+    },
+    {
+      name: 'Fernando',
+      surname: 'Torres',
+    },
+    {
+      name: 'Alberto',
+      surname: 'Ruiz',
+    },
+    {
+      name: 'Alfredo',
+      surname: 'Gimenez',
+    },
+    {
+      name: 'Oscar',
+      surname: 'Gutierrez',
+    },
+    {
+      name: 'Esteban',
+      surname: 'Garcia',
+    },
+    {
+      name: 'Eduardo',
+      surname: 'Pereyra',
+    },
+    {
+      name: 'Hector',
+      surname: 'Fernandez',
+    },
+    {
+      name: 'Luis',
+      surname: 'Rodriguez',
+    },
+    {
+      name: 'Mario',
+      surname: 'Gomez',
+    },
+    {
+      name: 'Sergio',
+      surname: 'Gonzalez',
+    },
+    {
+      name: 'Pablo',
+      surname: 'Lopez',
     },
   ],
 };

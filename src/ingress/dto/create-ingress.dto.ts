@@ -38,7 +38,7 @@ export class CreateIngressDto {
   @IsString()
   @IsUUID()
   @IsNotEmpty()
-  movile_id: string;
+  movil_id: string;
 
   @IsString({ each: true })
   @IsUUID('4', { each: true })

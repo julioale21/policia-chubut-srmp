@@ -11,8 +11,10 @@ import {
 import { ProviderService } from './provider.service';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('provider')
+@Auth()
 export class ProviderController {
   constructor(private readonly providerService: ProviderService) {}
 

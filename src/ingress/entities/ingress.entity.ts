@@ -1,5 +1,5 @@
 import { EquipementIngress } from 'src/equipement-ingress/entities/equipement-ingress.entity';
-import { Movile } from 'src/moviles/entities/movile.entity';
+import { Movil } from 'src/moviles/entities/movil.entity';
 import {
   Column,
   Entity,
@@ -43,9 +43,9 @@ export class Ingress {
   @Column({ nullable: true })
   deletedAt: Date | null;
 
-  @ManyToOne(() => Movile, (movile) => movile.ingress)
+  @ManyToOne(() => Movil, (movil) => movil.ingress)
   @JoinColumn()
-  movile: Movile;
+  movil: Movil;
 
   @OneToMany(
     () => EquipementIngress,

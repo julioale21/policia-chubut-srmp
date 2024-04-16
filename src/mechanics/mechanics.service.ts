@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMechanicDto } from './dto/create-mechanic.dto';
 import { UpdateMechanicDto } from './dto/update-mechanic.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +12,8 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class MechanicsService {
+  private readonly logger = new Logger('MechanicService');
+
   constructor(
     @InjectRepository(Mechanic)
     private readonly mechanicRepository: Repository<Mechanic>,
@@ -58,5 +65,15 @@ export class MechanicsService {
       console.error(error);
     }
     return `This action removes a #${id} mechanic`;
+  }
+
+  async deleteAllMechanics() {
+    const query = this.mechanicRepository.createQueryBuilder('mechanic');
+
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }

@@ -1,6 +1,13 @@
+import { Ingress } from 'src/ingress/entities/ingress.entity';
 import { Mechanic } from 'src/mechanics/entities/mechanic.entity';
-import { Movile } from 'src/moviles/entities/movile.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Movil } from 'src/moviles/entities/movil.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Egress {
@@ -19,6 +26,9 @@ export class Egress {
   @ManyToOne(() => Mechanic)
   mechanic: Mechanic;
 
-  @ManyToOne(() => Movile)
-  movile: Movile;
+  @ManyToOne(() => Movil)
+  movil: Movil;
+
+  @OneToOne(() => Ingress)
+  ingress: Ingress;
 }

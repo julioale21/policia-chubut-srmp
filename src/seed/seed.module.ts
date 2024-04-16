@@ -7,6 +7,8 @@ import { MovilesModule } from 'src/moviles/moviles.module';
 import { EquipementsModule } from 'src/equipements/equipements.module';
 import { IngressModule } from 'src/ingress/ingress.module';
 import { EquipementIngressModule } from 'src/equipement-ingress/equipement-ingress.module';
+import { MechanicsModule } from 'src/mechanics/mechanics.module';
+import { ProviderModule } from 'src/provider/provider.module';
 
 @Module({
   controllers: [SeedController],
@@ -18,6 +20,8 @@ import { EquipementIngressModule } from 'src/equipement-ingress/equipement-ingre
     EquipementsModule,
     IngressModule,
     EquipementIngressModule,
+    MechanicsModule,
+    ProviderModule,
   ],
 })
 export class SeedModule {}

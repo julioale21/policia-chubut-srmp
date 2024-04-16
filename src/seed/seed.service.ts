@@ -3,11 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { DependenciesService } from 'src/dependencies/dependencies.service';
 import { EquipementsService } from 'src/equipements/equipements.service';
 import { initialData } from './data/seed-data';
-import { Movile } from 'src/moviles/entities/movile.entity';
+import { Movil } from 'src/moviles/entities/movil.entity';
 import { Dependency } from 'src/dependencies/entities/dependency.entity';
 import { IngressService } from 'src/ingress/ingress.service';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
 import { EquipementIngressService } from 'src/equipement-ingress/equipement-ingress.service';
+import { MechanicsService } from 'src/mechanics/mechanics.service';
+import { ProviderService } from 'src/provider/provider.service';
 
 @Injectable()
 export class SeedService {
@@ -17,6 +19,8 @@ export class SeedService {
     private readonly movilesService: MovilesService,
     private readonly ingressService: IngressService,
     private readonly equipementIngressService: EquipementIngressService,
+    private readonly mechanicsService: MechanicsService,
+    private readonly providerService: ProviderService,
   ) {}
 
   async runSeed() {
@@ -25,6 +29,8 @@ export class SeedService {
     const equipements = await this.createEquipements();
     const moviles = await this.createMoviles(dependencies);
     await this.createIngresses(moviles, equipements);
+    const mechanics = await this.createMechanics();
+    console.log({ mechanics });
 
     return {
       message: 'Seed executed successfully',
@@ -37,6 +43,8 @@ export class SeedService {
     await this.equipementsService.deleteAllEquipements();
     await this.movilesService.deleteAllMoviles();
     await this.dependenciesService.deleteAllDependencies();
+    await this.mechanicsService.deleteAllMechanics();
+    // await this.providerService.deleteAllProviders();
   }
 
   private async createDependencies() {
@@ -67,22 +75,22 @@ export class SeedService {
     const createdMoviles = [];
     const mockMoviles = initialData.moviles;
 
-    for (const movile of mockMoviles) {
+    for (const movil of mockMoviles) {
       const randomIndex = Math.floor(Math.random() * dependencies.length);
       const selectedDependency = dependencies[randomIndex];
 
-      const newMovile: Movile = await this.movilesService.create({
-        ...(movile as Movile),
+      const newMovil: Movil = await this.movilesService.create({
+        ...(movil as Movil),
         dependencyId: selectedDependency.id,
       });
 
-      createdMoviles.push(newMovile);
+      createdMoviles.push(newMovil);
     }
 
     return createdMoviles;
   }
 
-  private async createIngresses(moviles: Movile[], equipements: Equipement[]) {
+  private async createIngresses(moviles: Movil[], equipements: Equipement[]) {
     const createdIngresses = [];
     const mockIngresses = initialData.ingresses;
 
@@ -91,12 +99,22 @@ export class SeedService {
       const selectedMovile = moviles[randomMovileIndex];
       const newIngress = await this.ingressService.create({
         ...ingress,
-        movile_id: selectedMovile.id,
+        movil_id: selectedMovile.id,
         equipements: equipements.map((equipement) => equipement.id),
       });
       createdIngresses.push(newIngress);
     }
 
     return createdIngresses;
+  }
+
+  private async createMechanics() {
+    const createdMechanics = [];
+    const mockMechanics = initialData.mechanics;
+
+    for (const mechanic of mockMechanics) {
+      const newMechanic = await this.mechanicsService.create(mechanic);
+      createdMechanics.push(newMechanic);
+    }
   }
 }

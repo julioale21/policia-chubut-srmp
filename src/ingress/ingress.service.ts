@@ -12,7 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Ingress } from './entities/ingress.entity';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { MovilesService } from 'src/moviles/moviles.service';
-import { Movile } from 'src/moviles/entities/movile.entity';
+import { Movil } from 'src/moviles/entities/movil.entity';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
 import { EquipementIngress } from 'src/equipement-ingress/entities/equipement-ingress.entity';
 
@@ -31,19 +31,19 @@ export class IngressService {
   async create(createIngressDto: CreateIngressDto) {
     try {
       return await this.datasource.transaction(async (entityManager) => {
-        const { movile_id, equipements } = createIngressDto;
+        const { movil_id, equipements } = createIngressDto;
 
-        const movile: Movile = await entityManager.findOne(Movile, {
-          where: { id: movile_id },
+        const movil: Movil = await entityManager.findOne(Movil, {
+          where: { id: movil_id },
         });
-        if (!movile) throw new BadRequestException('Movil not found');
+        if (!movil) throw new BadRequestException('Movil not found');
 
         const ingress = this.ingressRepository.create({
           ...createIngressDto,
           date: createIngressDto.date
             ? new Date(createIngressDto.date)
             : new Date(),
-          movile: movile,
+          movil: movil,
         });
 
         const savedIngress = await entityManager.save(ingress);
@@ -81,7 +81,7 @@ export class IngressService {
     try {
       const offset = page * limit;
       const [data, total] = await this.ingressRepository.findAndCount({
-        relations: ['movile'],
+        relations: ['movil'],
         where: {
           deletedAt: null,
         },
@@ -112,7 +112,7 @@ export class IngressService {
 
       const query = this.ingressRepository
         .createQueryBuilder('ingress')
-        .leftJoinAndSelect('ingress.movile', 'movile')
+        .leftJoinAndSelect('ingress.movil', 'movil')
         .where('ingress.deletedAt IS NULL')
         .orderBy('ingress.date', 'DESC')
         .skip(offset)
@@ -133,13 +133,13 @@ export class IngressService {
               .orWhere('ingress.order_number LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               })
-              .orWhere('movile.brand LIKE :searchTerm', {
+              .orWhere('movil.brand LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               })
-              .orWhere('movile.domain LIKE :searchTerm', {
+              .orWhere('movil.domain LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               })
-              .orWhere('movile.internal_register LIKE :searchTerm', {
+              .orWhere('movil.internal_register LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               });
           }),
@@ -161,11 +161,7 @@ export class IngressService {
   async findOne(id: string): Promise<Ingress> {
     const ingress = await this.ingressRepository.findOne({
       where: { id },
-      relations: [
-        'movile',
-        'equipementIngress',
-        'equipementIngress.equipement',
-      ],
+      relations: ['movil', 'equipementIngress', 'equipementIngress.equipement'],
     });
 
     if (!ingress) throw new NotFoundException('Ingress not found');
@@ -182,12 +178,12 @@ export class IngressService {
     if (!ingress) throw new NotFoundException('Ingress not found');
 
     await this.datasource.transaction(async (entityManager) => {
-      if (updateIngressDto.movile_id) {
-        const movile = await this.movilesService.findOne(
-          updateIngressDto.movile_id,
+      if (updateIngressDto.movil_id) {
+        const movil = await this.movilesService.findOne(
+          updateIngressDto.movil_id,
         );
-        if (!movile) throw new BadRequestException('Movil not found');
-        ingress.movile = movile;
+        if (!movil) throw new BadRequestException('Movil not found');
+        ingress.movil = movil;
       }
 
       const existingEquipementIds = ingress.equipementIngress.map(
@@ -240,11 +236,7 @@ export class IngressService {
 
     return await this.ingressRepository.findOne({
       where: { id },
-      relations: [
-        'equipementIngress',
-        'equipementIngress.equipement',
-        'movile',
-      ],
+      relations: ['equipementIngress', 'equipementIngress.equipement', 'movil'],
     });
   }
 

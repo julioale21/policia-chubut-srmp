@@ -83,7 +83,7 @@ export class AuthService {
     }
 
     return {
-      user,
+      user: localUser,
       token: this.getJwtToken({ id: user.id }),
     };
   }
