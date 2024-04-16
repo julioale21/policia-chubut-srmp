@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   UnprocessableEntityException,
@@ -89,5 +90,15 @@ export class MovilesService {
     await this.movileRepository.remove(movile);
 
     return `Movile ${movile.id} deleted`;
+  }
+
+  async deleteAllMoviles() {
+    const query = this.movileRepository.createQueryBuilder('movile');
+
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }

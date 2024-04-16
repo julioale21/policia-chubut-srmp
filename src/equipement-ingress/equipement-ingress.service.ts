@@ -71,4 +71,8 @@ export class EquipementIngressService {
   async remove(id: string) {
     return this.equipementIngressRepository.delete(id);
   }
+
+  async deleteAllEquipementIngresses(): Promise<void> {
+    await this.equipementIngressRepository.delete({});
+  }
 }

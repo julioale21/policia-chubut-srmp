@@ -15,6 +15,7 @@ export class Equipement {
   @OneToMany(
     () => EquipementIngress,
     (equipementIngress) => equipementIngress.equipement,
+    { cascade: ['insert', 'update', 'remove'], onDelete: 'CASCADE' },
   )
-  equipementIngress: EquipementIngress;
+  equipementIngress: EquipementIngress[];
 }

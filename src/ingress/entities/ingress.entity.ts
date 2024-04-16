@@ -15,7 +15,7 @@ export class Ingress {
   id: string;
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamp with time zone',
     default: () => 'CURRENT_TIMESTAMP',
   })
   date: Date;
@@ -40,6 +40,9 @@ export class Ingress {
   })
   fuel_level: number;
 
+  @Column({ nullable: true })
+  deletedAt: Date | null;
+
   @ManyToOne(() => Movile, (movile) => movile.ingress)
   @JoinColumn()
   movile: Movile;
@@ -47,6 +50,7 @@ export class Ingress {
   @OneToMany(
     () => EquipementIngress,
     (equipementIngress) => equipementIngress.ingress,
+    { cascade: ['insert', 'update', 'remove'], onDelete: 'CASCADE' },
   )
-  equipementIngress: EquipementIngress;
+  equipementIngress: EquipementIngress[];
 }

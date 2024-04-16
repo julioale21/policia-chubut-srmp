@@ -17,7 +17,7 @@ const usersDB = [
     name: 'JaRomero',
     email: 'julioromero@policia.chubut.gov.ar',
     password: '1234',
-    roles: ['admin', 'user'],
+    roles: ['admin', 'user', 'super-user'],
   },
 ];
 
@@ -83,8 +83,8 @@ export class AuthService {
     }
 
     return {
-      user: localUser,
-      token: this.getJwtToken({ id: localUser.id }),
+      user,
+      token: this.getJwtToken({ id: user.id }),
     };
   }
 
