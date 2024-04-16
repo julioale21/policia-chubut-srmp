@@ -11,8 +11,10 @@ import { MechanicsService } from './mechanics.service';
 import { CreateMechanicDto } from './dto/create-mechanic.dto';
 import { UpdateMechanicDto } from './dto/update-mechanic.dto';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid/parse-uuid.pipe';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('mechanics')
+@Auth()
 export class MechanicsController {
   constructor(private readonly mechanicsService: MechanicsService) {}
 

@@ -24,11 +24,11 @@ export class EgressService {
     const { movile_id, mechanic_boss_id, mechanic_id, ...restData } =
       createEgressDto;
 
-    const movile = await this.movileService.findOne(movile_id);
-
-    const mechanic_boss = await this.mechanicService.findOne(mechanic_boss_id);
-
-    const mechanic = await this.mechanicService.findOne(mechanic_id);
+    const [movile, mechanic_boss, mechanic] = await Promise.all([
+      await this.movileService.findOne(movile_id),
+      await this.mechanicService.findOne(mechanic_boss_id),
+      await this.mechanicService.findOne(mechanic_id),
+    ]);
 
     const egress = this.egressRepository.create({
       ...restData,

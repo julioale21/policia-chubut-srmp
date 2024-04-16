@@ -24,11 +24,12 @@ export class EquipementIngressService {
   async create(createEquipementIngressDto: CreateEquipementIngressDto) {
     const { ingressId, equipementId } = createEquipementIngressDto;
 
-    const ingress = await this.ingressService.findOne(ingressId);
+    const [ingress, equipement] = await Promise.all([
+      await this.ingressService.findOne(ingressId),
+      await this.equipementsService.findOne(equipementId),
+    ]);
 
     if (!ingress) throw new NotFoundException('Ingress not found');
-
-    const equipement = await this.equipementsService.findOne(equipementId);
 
     if (!equipement) throw new NotFoundException('Equipement not found');
 

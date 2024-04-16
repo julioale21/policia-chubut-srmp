@@ -11,8 +11,10 @@ import {
 import { SparePartService } from './spare_part.service';
 import { CreateSparePartDto } from './dto/create-spare_part.dto';
 import { UpdateSparePartDto } from './dto/update-spare_part.dto';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('spare-part')
+@Auth()
 export class SparePartController {
   constructor(private readonly sparePartService: SparePartService) {}
 

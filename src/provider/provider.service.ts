@@ -62,4 +62,9 @@ export class ProviderService {
     await this.providerRepository.remove(provider);
     return `Deleted provider with id: ${id}`;
   }
+
+  async deleteAllProviders() {
+    await this.providerRepository.clear();
+    return 'All providers deleted';
+  }
 }
