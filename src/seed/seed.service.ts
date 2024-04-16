@@ -44,7 +44,7 @@ export class SeedService {
     await this.movilesService.deleteAllMoviles();
     await this.dependenciesService.deleteAllDependencies();
     await this.mechanicsService.deleteAllMechanics();
-    await this.providerService.deleteAllProviders();
+    // await this.providerService.deleteAllProviders();
   }
 
   private async createDependencies() {

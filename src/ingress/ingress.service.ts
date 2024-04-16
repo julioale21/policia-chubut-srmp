@@ -81,7 +81,7 @@ export class IngressService {
     try {
       const offset = page * limit;
       const [data, total] = await this.ingressRepository.findAndCount({
-        relations: ['movile'],
+        relations: ['movil'],
         where: {
           deletedAt: null,
         },
@@ -112,7 +112,7 @@ export class IngressService {
 
       const query = this.ingressRepository
         .createQueryBuilder('ingress')
-        .leftJoinAndSelect('ingress.movile', 'movile')
+        .leftJoinAndSelect('ingress.movil', 'movil')
         .where('ingress.deletedAt IS NULL')
         .orderBy('ingress.date', 'DESC')
         .skip(offset)
@@ -133,13 +133,13 @@ export class IngressService {
               .orWhere('ingress.order_number LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               })
-              .orWhere('movile.brand LIKE :searchTerm', {
+              .orWhere('movil.brand LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               })
-              .orWhere('movile.domain LIKE :searchTerm', {
+              .orWhere('movil.domain LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               })
-              .orWhere('movile.internal_register LIKE :searchTerm', {
+              .orWhere('movil.internal_register LIKE :searchTerm', {
                 searchTerm: `%${searchTerm}%`,
               });
           }),
@@ -161,11 +161,7 @@ export class IngressService {
   async findOne(id: string): Promise<Ingress> {
     const ingress = await this.ingressRepository.findOne({
       where: { id },
-      relations: [
-        'movile',
-        'equipementIngress',
-        'equipementIngress.equipement',
-      ],
+      relations: ['movil', 'equipementIngress', 'equipementIngress.equipement'],
     });
 
     if (!ingress) throw new NotFoundException('Ingress not found');
@@ -240,11 +236,7 @@ export class IngressService {
 
     return await this.ingressRepository.findOne({
       where: { id },
-      relations: [
-        'equipementIngress',
-        'equipementIngress.equipement',
-        'movile',
-      ],
+      relations: ['equipementIngress', 'equipementIngress.equipement', 'movil'],
     });
   }
 
