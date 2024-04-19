@@ -9,7 +9,7 @@ export class SparePart {
   @Column('text')
   brand: string;
 
-  @Column('text')
+  @Column('text', { unique: true })
   model: string;
 
   @Column('text')
@@ -21,6 +21,8 @@ export class SparePart {
   @Column('float', { default: 0 })
   stock: number;
 
-  @OneToMany(() => OrderLine, (orderLine) => orderLine.sparePart)
+  @OneToMany(() => OrderLine, (orderLine) => orderLine.sparePart, {
+    cascade: true,
+  })
   orderLine: OrderLine;
 }

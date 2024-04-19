@@ -24,7 +24,7 @@ export class CreateSparePartOrderDto {
 
   @IsString()
   @IsOptional()
-  observations: string;
+  observations?: string;
 
   @IsEnum(OrderType)
   @IsNotEmpty()
@@ -32,5 +32,5 @@ export class CreateSparePartOrderDto {
 
   @IsString()
   @IsOptional()
-  provider_id: string;
+  provider_id?: string;
 }

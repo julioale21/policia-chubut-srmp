@@ -16,6 +16,8 @@ export class OrderLineService {
   constructor(
     @InjectRepository(OrderLine)
     private orderLineRepository: Repository<OrderLine>,
+    // private sparePartOrderRepository: Repository<SparePartOrder>,
+    // private sparePartRepository: Repository<SparePart>,
 
     private datasource: DataSource,
   ) {}
@@ -54,6 +56,42 @@ export class OrderLineService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  // async addOrUpdateOrderLine(
+  //   orderId: string,
+  //   sparePartId: string,
+  //   quantity: number,
+  // ) {
+  //   const sparePartOrder = await this.sparePartOrderRepository.findOne({
+  //     where: { id: orderId },
+  //   });
+  //   const sparePart = await this.sparePartRepository.findOne({
+  //     where: { id: sparePartId },
+  //   });
+
+  //   if (!sparePartOrder || !sparePart) {
+  //     throw new Error('Order or Spare Part not found');
+  //   }
+
+  //   let orderLine = await this.orderLineRepository.findOne({
+  //     where: {
+  //       sparePartOrder: { id: orderId },
+  //       sparePart: { id: sparePartId },
+  //     },
+  //   });
+
+  //   if (orderLine) {
+  //     orderLine.quantity += quantity;
+  //   } else {
+  //     orderLine = this.orderLineRepository.create({
+  //       sparePartOrder,
+  //       sparePart,
+  //       quantity,
+  //     });
+  //   }
+
+  //   return await this.orderLineRepository.save(orderLine);
+  // }
 
   async findAll() {
     return this.orderLineRepository.find();
