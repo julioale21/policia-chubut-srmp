@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSparePartDto } from './dto/create-spare_part.dto';
 import { UpdateSparePartDto } from './dto/update-spare_part.dto';
 import { Repository } from 'typeorm';
@@ -13,9 +18,16 @@ export class SparePartService {
   ) {}
 
   async create(createSparePartDto: CreateSparePartDto) {
-    const sparePart = this.sparePartRepository.create(createSparePartDto);
-    await this.sparePartRepository.save(sparePart);
-    return sparePart;
+    try {
+      const sparePart = this.sparePartRepository.create(createSparePartDto);
+      await this.sparePartRepository.save(sparePart);
+      return sparePart;
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new BadRequestException('spare part code already exists');
+      }
+      throw new InternalServerErrorException();
+    }
   }
 
   async findAll() {

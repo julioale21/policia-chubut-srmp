@@ -84,7 +84,7 @@ export class DependenciesService {
       throw new NotFoundException(`Dependency with id ${id} not found`);
     }
 
-    return await this.dependencyRepository.delete(dependency);
+    return await this.dependencyRepository.delete({ id });
   }
 
   async deleteAllDependencies() {

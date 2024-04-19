@@ -1,4 +1,23 @@
-import { IsDate, IsOptional, IsString, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+
+class SparePartDto {
+  @IsUUID()
+  @IsNotEmpty()
+  id: string;
+
+  @IsNotEmpty()
+  quantity: number;
+}
 
 export class CreateEgressDto {
   @IsDate()
@@ -8,6 +27,11 @@ export class CreateEgressDto {
   @IsOptional()
   @IsString()
   observations: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(1)
+  order_number: string;
 
   @IsString()
   @IsUUID()
@@ -22,5 +46,15 @@ export class CreateEgressDto {
   @IsString()
   @IsUUID()
   @IsOptional()
-  movile_id: string;
+  movil_id: string;
+
+  @IsString()
+  @IsUUID()
+  @IsNotEmpty()
+  ingress_id: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SparePartDto)
+  spare_parts: SparePartDto[];
 }

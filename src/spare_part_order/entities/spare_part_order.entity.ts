@@ -1,3 +1,4 @@
+import { Egress } from 'src/egress/entities/egress.entity';
 import { OrderLine } from 'src/order_line/entities/order_line.entity';
 import { Provider } from 'src/provider/entities/provider.entity';
 import {
@@ -5,6 +6,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -25,11 +27,16 @@ export class SparePartOrder {
   @Column({ type: 'text' })
   type: string;
 
+  @OneToOne(() => Egress, (egress) => egress.spare_part_order, {
+    cascade: true,
+  })
+  egress: Egress;
+
   @ManyToOne(() => Provider)
   provider: Provider;
 
   @OneToMany(() => OrderLine, (orderLine) => orderLine.sparePartOrder, {
-    cascade: true,
+    cascade: ['insert', 'update', 'remove'],
   })
-  orderLine: OrderLine;
+  orderLines: OrderLine[];
 }

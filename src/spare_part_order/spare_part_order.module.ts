@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SparePartOrderService } from './spare_part_order.service';
 import { SparePartOrderController } from './spare_part_order.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,7 +14,7 @@ import { EgressModule } from 'src/egress/egress.module';
     TypeOrmModule.forFeature([SparePartOrder]),
     ProviderModule,
     OrderLineModule,
-    EgressModule,
+    forwardRef(() => EgressModule),
   ],
   exports: [SparePartOrderService],
 })

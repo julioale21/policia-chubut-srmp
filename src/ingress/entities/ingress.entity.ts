@@ -1,3 +1,4 @@
+import { Egress } from 'src/egress/entities/egress.entity';
 import { EquipementIngress } from 'src/equipement-ingress/entities/equipement-ingress.entity';
 import { Movil } from 'src/moviles/entities/movil.entity';
 import {
@@ -6,6 +7,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -40,12 +42,12 @@ export class Ingress {
   })
   fuel_level: number;
 
-  @Column({ nullable: true })
-  deletedAt: Date | null;
-
   @ManyToOne(() => Movil, (movil) => movil.ingress)
   @JoinColumn()
   movil: Movil;
+
+  @OneToOne(() => Egress, (egress) => egress.ingress, { cascade: true })
+  egress: Egress;
 
   @OneToMany(
     () => EquipementIngress,
@@ -53,4 +55,7 @@ export class Ingress {
     { cascade: ['insert', 'update', 'remove'], onDelete: 'CASCADE' },
   )
   equipementIngress: EquipementIngress[];
+
+  @Column({ nullable: true })
+  deletedAt: Date | null;
 }
