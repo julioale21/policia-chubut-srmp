@@ -1,4 +1,3 @@
-import { CreateSparePartDto } from './../spare_part/dto/create-spare_part.dto';
 import {
   BadRequestException,
   Injectable,
