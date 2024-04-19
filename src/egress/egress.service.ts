@@ -62,6 +62,7 @@ export class EgressService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    // Validate stock
     const stockShortages = await this.validateStock(spare_parts);
     if (stockShortages.length) {
       throw new UnprocessableEntityException({
@@ -73,6 +74,7 @@ export class EgressService {
     }
 
     try {
+      // Create spare part order
       const spart_part_order = await queryRunner.manager.save(
         await this.sparePartOrderService.create({
           order_number: order_number,
@@ -82,6 +84,7 @@ export class EgressService {
         }),
       );
 
+      // Create order lines
       await Promise.all(
         spare_parts.map(async (spare_part) =>
           queryRunner.manager.save(
@@ -94,8 +97,8 @@ export class EgressService {
         ),
       );
 
+      // Update stock
       for (const spare_part of spare_parts) {
-        // Actualizar el stock
         await queryRunner.manager.decrement(
           SparePart,
           { id: spare_part.id },
@@ -104,6 +107,7 @@ export class EgressService {
         );
       }
 
+      // Create egress
       const egress = queryRunner.manager.create(Egress, {
         ...restData,
         order_number,
