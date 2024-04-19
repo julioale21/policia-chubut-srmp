@@ -22,7 +22,7 @@ export class Egress {
   @Column({ nullable: true })
   observations: string;
 
-  @Column()
+  @Column({ unique: true })
   order_number: string;
 
   @ManyToOne(() => Mechanic)

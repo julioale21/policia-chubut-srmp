@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateEgressDto, SparePartDto } from './dto/create-egress.dto';
-// import { UpdateEgressDto } from './dto/update-egress.dto';
 import { Egress } from './entities/egress.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SparePartOrderService } from 'src/spare_part_order/spare_part_order.service';
@@ -16,6 +15,9 @@ import { OrderType } from 'src/spare_part_order/dto/create-spare_part_order.dto'
 import { OrderLineService } from 'src/order_line/order_line.service';
 import { SparePartService } from 'src/spare_part/spare_part.service';
 import { SparePart } from 'src/spare_part/entities/spare_part.entity';
+import { IngressService } from 'src/ingress/ingress.service';
+import { IngressStatus } from 'src/ingress/dto/create-ingress.dto';
+import { Ingress } from 'src/ingress/entities/ingress.entity';
 
 @Injectable()
 export class EgressService {
@@ -27,6 +29,7 @@ export class EgressService {
     private readonly sparePartOrderService: SparePartOrderService,
     private readonly orderLineService: OrderLineService,
     private readonly sparePartService: SparePartService,
+    private readonly ingressService: IngressService,
     private dataSource: DataSource,
   ) {}
 
@@ -60,9 +63,22 @@ export class EgressService {
       ...restData
     } = createEgressDto;
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    // Validate ingress
+    const ingress = await this.ingressService.findOne(ingress_id);
+
+    console.log(ingress);
+
+    if (!ingress) {
+      throw new UnprocessableEntityException('Ingress not found');
+    }
+
+    if (ingress.deletedAt) {
+      throw new UnprocessableEntityException('Ingress is deleted');
+    }
+
+    if (ingress.status === IngressStatus.Completed) {
+      throw new UnprocessableEntityException('Ingress is already completed');
+    }
 
     // Validate stock
     const stockShortages = await this.validateStock(spare_parts);
@@ -74,6 +90,10 @@ export class EgressService {
         stockShortages: stockShortages,
       });
     }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
       // Create spare part order
@@ -121,6 +141,15 @@ export class EgressService {
         spare_part_order: spart_part_order,
       });
 
+      console.log('entre aca');
+
+      // Update ingress status
+      await queryRunner.manager.update(Ingress, ingress_id, {
+        status: IngressStatus.Completed,
+      });
+
+      console.log('entre aca 2');
+
       await queryRunner.manager.save(egress);
 
       await queryRunner.commitTransaction();
@@ -128,7 +157,7 @@ export class EgressService {
     } catch (error) {
       this.logger.error(error.message);
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException('Error creating egress');
+      throw new BadRequestException(error.message);
     } finally {
       await queryRunner.release();
     }
