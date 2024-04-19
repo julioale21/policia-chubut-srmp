@@ -2,10 +2,11 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateEgressDto, SparePartDto } from './dto/create-egress.dto';
 // import { UpdateEgressDto } from './dto/update-egress.dto';
 import { Egress } from './entities/egress.entity';
@@ -18,6 +19,8 @@ import { SparePart } from 'src/spare_part/entities/spare_part.entity';
 
 @Injectable()
 export class EgressService {
+  private readonly logger = new Logger('EgressService');
+
   constructor(
     @InjectRepository(Egress)
     private readonly egressRepository: Repository<Egress>,
@@ -123,6 +126,7 @@ export class EgressService {
       await queryRunner.commitTransaction();
       return egress;
     } catch (error) {
+      this.logger.error(error.message);
       await queryRunner.rollbackTransaction();
       throw new BadRequestException('Error creating egress');
     } finally {
@@ -155,6 +159,54 @@ export class EgressService {
       egressOrders: data,
       total,
     };
+  }
+
+  async findAllAndSearch(
+    page: number,
+    limit: number,
+    searchTerm?: string,
+  ): Promise<{ egressOrders: Egress[]; total: number }> {
+    try {
+      const offset = page * limit;
+
+      const query = this.egressRepository
+        .createQueryBuilder('egress')
+        .leftJoinAndSelect('egress.mechanic', 'mechanic')
+        .leftJoinAndSelect('egress.mechanic_boss', 'mechanic_boss')
+        .leftJoinAndSelect('egress.movil', 'movil')
+        .leftJoinAndSelect('egress.ingress', 'ingress')
+        .leftJoinAndSelect('egress.spare_part_order', 'spare_part_order')
+        .where('egress.deletedAt IS NULL')
+        .orderBy('egress.date', 'DESC')
+        .skip(offset)
+        .take(limit);
+
+      if (searchTerm && searchTerm !== '' && searchTerm !== 'undefined') {
+        query.andWhere(
+          new Brackets((qb) => {
+            qb.where("TO_CHAR(egress.date, 'DD/MM') LIKE :searchTerm", {
+              searchTerm: `%${searchTerm}%`,
+            })
+              .orWhere('egress.observations::text LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
+              })
+              .orWhere('egress.order_number LIKE :searchTerm', {
+                searchTerm: `%${searchTerm}%`,
+              });
+          }),
+        );
+      }
+
+      const [data, total] = await query.getManyAndCount();
+
+      return {
+        egressOrders: data,
+        total,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new UnprocessableEntityException(error.message);
+    }
   }
 
   async findOne(id: string) {

@@ -31,7 +31,8 @@ export class DependenciesService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+    const { limit, page } = paginationDto;
+    const offset = page * limit;
     return await this.dependencyRepository.find({
       take: limit,
       skip: offset,
