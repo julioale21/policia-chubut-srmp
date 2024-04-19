@@ -152,7 +152,7 @@ export class EgressService {
     });
 
     return {
-      data,
+      egressOrders: data,
       total,
     };
   }
