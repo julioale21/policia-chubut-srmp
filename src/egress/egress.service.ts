@@ -1,3 +1,4 @@
+import { CreateSparePartDto } from './../spare_part/dto/create-spare_part.dto';
 import {
   BadRequestException,
   Injectable,
@@ -6,7 +7,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { CreateEgressDto } from './dto/create-egress.dto';
+import { CreateEgressDto, SparePartDto } from './dto/create-egress.dto';
 // import { UpdateEgressDto } from './dto/update-egress.dto';
 import { Egress } from './entities/egress.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,60 +28,7 @@ export class EgressService {
     private dataSource: DataSource,
   ) {}
 
-  // async create(createEgressDto: CreateEgressDto) {
-  //   const {
-  //     movil_id,
-  //     mechanic_boss_id,
-  //     mechanic_id,
-  //     ingress_id,
-  //     spare_parts,
-  //     order_number,
-  //     ...restData
-  //   } = createEgressDto;
-
-  //   try {
-  //     const spart_part_order = await this.sparePartOrderService.create({
-  //       order_number: order_number,
-  //       date: new Date(),
-  //       observations: '',
-  //       type: OrderType.out,
-  //     });
-
-  //     await Promise.all(
-  //       spare_parts.map((spare_part) =>
-  //         this.orderLineService.create({
-  //           spare_part_order_id: spart_part_order.id,
-  //           spare_part_id: spare_part.id,
-  //           quantity: spare_part.quantity,
-  //         }),
-  //       ),
-  //     );
-
-  //     const egress = this.egressRepository.create({
-  //       ...restData,
-  //       order_number,
-  //       date: new Date(),
-  //       movil: { id: movil_id },
-  //       mechanic_boss: { id: mechanic_boss_id },
-  //       mechanic: { id: mechanic_id },
-  //       ingress: { id: ingress_id },
-  //       spare_part_order: spart_part_order,
-  //     });
-
-  //     //TODO update products stock
-
-  //     return await this.egressRepository.save(egress);
-  //   } catch (error) {
-  //     console.log(error.detail);
-  //     if (error.detail.includes('Key')) {
-  //       throw new BadRequestException(error.detail);
-  //     }
-
-  //     throw new InternalServerErrorException(error.details);
-  //   }
-  // }
-
-  async validateStock(spare_parts) {
+  async validateStock(spare_parts: SparePartDto[]) {
     const stockShortages = [];
 
     for (const part of spare_parts) {
@@ -91,7 +39,7 @@ export class EgressService {
           partModel: sparePart.model,
           requested: part.quantity,
           inStock: sparePart ? sparePart.stock : 0,
-          description: `Insufficient stock for part model ${part.sparePart}`,
+          description: `Insufficient stock for part model ${sparePart.model}`,
         });
       }
     }

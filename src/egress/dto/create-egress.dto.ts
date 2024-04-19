@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-class SparePartDto {
+export class SparePartDto {
   @IsUUID()
   @IsNotEmpty()
   id: string;
