@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
@@ -223,45 +225,24 @@ export class EgressService {
     return egress;
   }
 
-  // async update(id: string, updateEgressDto: UpdateEgressDto) {
-  //   const egress = await this.egressRepository.findOne({ where: { id } });
-
-  //   if (!egress) {
-  //     throw new UnprocessableEntityException('Egress not found');
-  //   }
-
-  //   const { movile_id, mechanic_boss_id, mechanic_id, ...restData } =
-  //     updateEgressDto;
-
-  //   const movil = await this.movileService.findOne(movile_id);
-
-  //   const mechanic_boss = await this.mechanicService.findOne(mechanic_boss_id);
-
-  //   const mechanic = await this.mechanicService.findOne(mechanic_id);
-
-  //   const updatedEgress = this.egressRepository.merge(egress, {
-  //     ...restData,
-  //     movil,
-  //     mechanic_boss,
-  //     mechanic,
-  //   });
-
-  //   try {
-  //     return await this.egressRepository.save(updatedEgress);
-  //   } catch (error) {
-  //     throw new InternalServerErrorException(error.message);
-  //   }
-  // }
-
-  async remove(id: string) {
+  async remove(id: string): Promise<string> {
     const egress = await this.egressRepository.findOne({ where: { id } });
 
-    if (!egress) {
-      throw new UnprocessableEntityException('Egress not found');
+    if (!egress) throw new NotFoundException('Egress order not found');
+
+    egress.deletedAt = new Date();
+    await this.egressRepository.save(egress);
+
+    return `Soft removed egress order with id: #${id}`;
+  }
+
+  async deleteAllEgresses() {
+    const query = this.egressRepository.createQueryBuilder('egress');
+
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
     }
-
-    await this.egressRepository.remove(egress);
-
-    return `Removed egress with id: #${id}`;
   }
 }
