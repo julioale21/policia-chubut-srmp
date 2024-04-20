@@ -10,9 +10,7 @@ import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
 import { CreateEgressDto, SparePartDto } from './dto/create-egress.dto';
 import { Egress } from './entities/egress.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SparePartOrderService } from 'src/spare_part_order/spare_part_order.service';
 import { OrderType } from 'src/spare_part_order/dto/create-spare_part_order.dto';
-import { OrderLineService } from 'src/order_line/order_line.service';
 import { SparePartService } from 'src/spare_part/spare_part.service';
 import { SparePart } from 'src/spare_part/entities/spare_part.entity';
 import { IngressService } from 'src/ingress/ingress.service';
@@ -28,8 +26,6 @@ export class EgressService {
   constructor(
     @InjectRepository(Egress)
     private readonly egressRepository: Repository<Egress>,
-    private readonly sparePartOrderService: SparePartOrderService,
-    private readonly orderLineService: OrderLineService,
     private readonly sparePartService: SparePartService,
     private readonly ingressService: IngressService,
     private dataSource: DataSource,
