@@ -66,8 +66,6 @@ export class EgressService {
     // Validate ingress
     const ingress = await this.ingressService.findOne(ingress_id);
 
-    console.log(ingress);
-
     if (!ingress) {
       throw new UnprocessableEntityException('Ingress not found');
     }
@@ -141,14 +139,10 @@ export class EgressService {
         spare_part_order: spart_part_order,
       });
 
-      console.log('entre aca');
-
       // Update ingress status
       await queryRunner.manager.update(Ingress, ingress_id, {
         status: IngressStatus.Completed,
       });
-
-      console.log('entre aca 2');
 
       await queryRunner.manager.save(egress);
 
