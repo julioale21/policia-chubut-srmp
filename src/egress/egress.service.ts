@@ -6,7 +6,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Brackets, DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
 import { CreateEgressDto, SparePartDto } from './dto/create-egress.dto';
 import { Egress } from './entities/egress.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +18,8 @@ import { SparePart } from 'src/spare_part/entities/spare_part.entity';
 import { IngressService } from 'src/ingress/ingress.service';
 import { IngressStatus } from 'src/ingress/dto/create-ingress.dto';
 import { Ingress } from 'src/ingress/entities/ingress.entity';
+import { SparePartOrder } from 'src/spare_part_order/entities/spare_part_order.entity';
+import { OrderLine } from 'src/order_line/entities/order_line.entity';
 
 @Injectable()
 export class EgressService {
@@ -94,25 +96,28 @@ export class EgressService {
     await queryRunner.startTransaction();
 
     try {
-      // Create spare part order
-      const spart_part_order = await queryRunner.manager.save(
-        await this.sparePartOrderService.create({
+      const spart_part_order = await this.createWithManager(
+        queryRunner.manager,
+        {
           order_number: order_number,
           date: new Date(),
           observations: '',
           type: OrderType.out,
-        }),
+        },
+        SparePartOrder,
       );
 
       // Create order lines
       await Promise.all(
         spare_parts.map(async (spare_part) =>
-          queryRunner.manager.save(
-            await this.orderLineService.create({
-              spare_part_order_id: spart_part_order.id,
-              spare_part_id: spare_part.id,
+          this.createWithManager(
+            queryRunner.manager,
+            {
               quantity: spare_part.quantity,
-            }),
+              sparePartOrder: { id: spart_part_order.id },
+              sparePart: { id: spare_part.id },
+            },
+            OrderLine,
           ),
         ),
       );
@@ -151,7 +156,7 @@ export class EgressService {
     } catch (error) {
       this.logger.error(error.message);
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException(error.message);
+      this.handleTransactionalDatabaseError(error);
     } finally {
       await queryRunner.release();
     }
@@ -269,6 +274,34 @@ export class EgressService {
       return await query.delete().where({}).execute();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async createWithManager<T>(
+    manager: EntityManager,
+    createDto: any,
+    entity: { new (): T },
+  ): Promise<T> {
+    const entityInstance = manager.create(entity, createDto);
+    await manager.save(entityInstance);
+    return entityInstance;
+  }
+
+  handleTransactionalDatabaseError(error: any): never {
+    const logger = new Logger('DatabaseErrorHandler');
+    if (error.driverError && error.driverError.code) {
+      switch (error.driverError.code) {
+        case '23505':
+          throw new BadRequestException('Duplicate entry detected.');
+        case '23503':
+          throw new BadRequestException('Referenced entity not found.');
+        default:
+          logger.error(`Database error: ${error.message}`, error.stack);
+          throw new InternalServerErrorException('Database error occurred.');
+      }
+    } else {
+      logger.error('Failed to process your request', error.stack);
+      throw new InternalServerErrorException('Failed to process your request.');
     }
   }
 }
