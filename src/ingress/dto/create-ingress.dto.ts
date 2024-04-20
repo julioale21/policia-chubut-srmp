@@ -10,6 +10,18 @@ import {
   Min,
 } from 'class-validator';
 
+export enum IngressStatus {
+  Pending = 'pending',
+  Completed = 'completed',
+  Cancelled = 'cancelled',
+}
+
+export enum IngressPriority {
+  High = 'high',
+  Medium = 'medium',
+  Low = 'low',
+}
+
 export class CreateIngressDto {
   @IsDate()
   @IsOptional()
@@ -43,4 +55,12 @@ export class CreateIngressDto {
   @IsString({ each: true })
   @IsUUID('4', { each: true })
   equipements: string[];
+
+  @IsString()
+  @IsOptional()
+  status?: IngressStatus;
+
+  @IsString()
+  @IsOptional()
+  priority?: IngressPriority;
 }

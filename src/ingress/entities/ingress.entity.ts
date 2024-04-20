@@ -10,6 +10,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { IngressPriority, IngressStatus } from '../dto/create-ingress.dto';
 
 @Entity()
 export class Ingress {
@@ -58,4 +59,18 @@ export class Ingress {
 
   @Column({ nullable: true })
   deletedAt: Date | null;
+
+  @Column({
+    type: 'enum',
+    enum: IngressPriority,
+    default: IngressPriority.Low,
+  })
+  priority: IngressPriority;
+
+  @Column({
+    type: 'enum',
+    enum: IngressStatus,
+    default: IngressStatus.Pending,
+  })
+  status: IngressStatus;
 }
