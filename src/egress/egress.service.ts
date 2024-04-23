@@ -31,25 +31,6 @@ export class EgressService {
     private dataSource: DataSource,
   ) {}
 
-  async validateStock(spare_parts: SparePartDto[]) {
-    const stockShortages = [];
-
-    for (const part of spare_parts) {
-      const sparePart = await this.sparePartService.findOne(part.id);
-      if (!sparePart || sparePart.stock < part.quantity) {
-        stockShortages.push({
-          partId: part.id,
-          partModel: sparePart.model,
-          requested: part.quantity,
-          inStock: sparePart ? sparePart.stock : 0,
-          description: `Insufficient stock for part model ${sparePart.model}`,
-        });
-      }
-    }
-
-    return stockShortages;
-  }
-
   async create(createEgressDto: CreateEgressDto) {
     const {
       movil_id,
@@ -62,37 +43,17 @@ export class EgressService {
     } = createEgressDto;
 
     // Validate ingress
-    const ingress = await this.ingressService.findOne(ingress_id);
-
-    if (!ingress) {
-      throw new UnprocessableEntityException('Ingress not found');
-    }
-
-    if (ingress.deletedAt) {
-      throw new UnprocessableEntityException('Ingress is deleted');
-    }
-
-    if (ingress.status === IngressStatus.Completed) {
-      throw new UnprocessableEntityException('Ingress is already completed');
-    }
+    await this.validateIngress(ingress_id);
 
     // Validate stock
-    const stockShortages = await this.validateStock(spare_parts);
-    if (stockShortages.length) {
-      throw new UnprocessableEntityException({
-        message: 'Stock shortages',
-        error: 'Unprocessable Entity',
-        statusCode: 422,
-        stockShortages: stockShortages,
-      });
-    }
+    await this.validateStock(spare_parts);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const spart_part_order = await this.createWithManager(
+      const spart_part_order = await this.createSparePartOrder(
         queryRunner.manager,
         {
           order_number: order_number,
@@ -100,33 +61,17 @@ export class EgressService {
           observations: '',
           type: OrderType.out,
         },
-        SparePartOrder,
       );
 
       // Create order lines
-      await Promise.all(
-        spare_parts.map(async (spare_part) =>
-          this.createWithManager(
-            queryRunner.manager,
-            {
-              quantity: spare_part.quantity,
-              sparePartOrder: { id: spart_part_order.id },
-              sparePart: { id: spare_part.id },
-            },
-            OrderLine,
-          ),
-        ),
+      await this.createOrderLines(
+        queryRunner.manager,
+        spart_part_order.id,
+        spare_parts,
       );
 
       // Update stock
-      for (const spare_part of spare_parts) {
-        await queryRunner.manager.decrement(
-          SparePart,
-          { id: spare_part.id },
-          'stock',
-          spare_part.quantity,
-        );
-      }
+      await this.updateStock(queryRunner.manager, spare_parts);
 
       // Create egress
       const egress = queryRunner.manager.create(Egress, {
@@ -273,6 +218,58 @@ export class EgressService {
     }
   }
 
+  async createSparePartOrder(
+    queryRunner: EntityManager,
+    orderDetails: {
+      order_number: string;
+      date: Date;
+      observations: string;
+      type: string;
+    },
+  ): Promise<SparePartOrder> {
+    const orderData = {
+      order_number: orderDetails.order_number,
+      date: orderDetails.date || new Date(),
+      observations: orderDetails.observations || '',
+      type: orderDetails.type || OrderType.out,
+    };
+    return this.createWithManager(queryRunner, orderData, SparePartOrder);
+  }
+
+  async createOrderLines(
+    manager: EntityManager,
+    spart_part_order_id: string,
+    spare_parts: SparePartDto[],
+  ): Promise<void> {
+    await Promise.all(
+      spare_parts.map(async (spare_part) =>
+        this.createWithManager(
+          manager,
+          {
+            quantity: spare_part.quantity,
+            sparePartOrder: { id: spart_part_order_id },
+            sparePart: { id: spare_part.id },
+          },
+          OrderLine,
+        ),
+      ),
+    );
+  }
+
+  async updateStock(
+    manager: EntityManager,
+    spare_parts: SparePartDto[],
+  ): Promise<void> {
+    for (const spare_part of spare_parts) {
+      await manager.decrement(
+        SparePart,
+        { id: spare_part.id },
+        'stock',
+        spare_part.quantity,
+      );
+    }
+  }
+
   async createWithManager<T>(
     manager: EntityManager,
     createDto: any,
@@ -298,6 +295,48 @@ export class EgressService {
     } else {
       logger.error('Failed to process your request', error.stack);
       throw new InternalServerErrorException('Failed to process your request.');
+    }
+  }
+
+  async validateStock(spare_parts: SparePartDto[]) {
+    const stockShortages = [];
+
+    for (const part of spare_parts) {
+      const sparePart = await this.sparePartService.findOne(part.id);
+      if (!sparePart || sparePart.stock < part.quantity) {
+        stockShortages.push({
+          partId: part.id,
+          partModel: sparePart.model,
+          requested: part.quantity,
+          inStock: sparePart ? sparePart.stock : 0,
+          description: `Insufficient stock for part model ${sparePart.model}`,
+        });
+      }
+    }
+
+    if (stockShortages.length) {
+      throw new UnprocessableEntityException({
+        message: 'Stock shortages',
+        error: 'Unprocessable Entity',
+        statusCode: 422,
+        stockShortages: stockShortages,
+      });
+    }
+  }
+
+  async validateIngress(ingress_id: string) {
+    const ingress = await this.ingressService.findOne(ingress_id);
+
+    if (!ingress) {
+      throw new UnprocessableEntityException('Ingress not found');
+    }
+
+    if (ingress.deletedAt) {
+      throw new UnprocessableEntityException('Ingress is deleted');
+    }
+
+    if (ingress.status === IngressStatus.Completed) {
+      throw new UnprocessableEntityException('Ingress is already completed');
     }
   }
 }

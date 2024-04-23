@@ -1,25 +1,25 @@
 import {
   Controller,
   Get,
-  // Post,
-  // Body,
+  Post,
+  Body,
   // Patch,
   // Param,
   // Delete,
   // ParseUUIDPipe,
 } from '@nestjs/common';
 import { SparePartOrderService } from './spare_part_order.service';
-// import { CreateSparePartOrderDto } from './dto/create-spare_part_order.dto';
+import { CreateSparePartOrderDto } from './dto/create-spare_part_order.dto';
 // import { UpdateSparePartOrderDto } from './dto/update-spare_part_order.dto';
 
 @Controller('spare-part-order')
 export class SparePartOrderController {
   constructor(private readonly sparePartOrderService: SparePartOrderService) {}
 
-  // @Post()
-  // create(@Body() createSparePartOrderDto: CreateSparePartOrderDto) {
-  //   return this.sparePartOrderService.create(createSparePartOrderDto);
-  // }
+  @Post()
+  create(@Body() createSparePartOrderDto: CreateSparePartOrderDto) {
+    return this.sparePartOrderService.create(createSparePartOrderDto);
+  }
 
   @Get()
   findAll() {
