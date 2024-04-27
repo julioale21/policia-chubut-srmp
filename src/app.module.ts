@@ -15,6 +15,7 @@ import { OrderLineModule } from './order_line/order_line.module';
 import { SparePartModule } from './spare_part/spare_part.module';
 import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -60,6 +61,8 @@ import { SeedModule } from './seed/seed.module';
     AuthModule,
 
     SeedModule,
+
+    StatisticsModule,
   ],
   controllers: [],
   providers: [],

@@ -339,4 +339,17 @@ export class EgressService {
       throw new UnprocessableEntityException('Ingress is already completed');
     }
   }
+
+  async getAllAndCount() {
+    const query = this.egressRepository
+      .createQueryBuilder('egress')
+      .where('egress.deletedAt IS NULL');
+
+    try {
+      const [data, count] = await query.getManyAndCount();
+      return { data, count };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

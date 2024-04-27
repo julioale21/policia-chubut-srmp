@@ -10,7 +10,7 @@ import { CreateIngressDto } from './dto/create-ingress.dto';
 import { UpdateIngressDto } from './dto/update-ingress.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ingress } from './entities/ingress.entity';
-import { Brackets, DataSource, Repository } from 'typeorm';
+import { Between, Brackets, DataSource, Repository } from 'typeorm';
 import { MovilesService } from 'src/moviles/moviles.service';
 import { Movil } from 'src/moviles/entities/movil.entity';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
@@ -258,6 +258,127 @@ export class IngressService {
       return await query.delete().where({}).execute();
     } catch (error) {
       throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async getAllAndCount(): Promise<{ ingresses: Ingress[]; count: number }> {
+    try {
+      const query = this.ingressRepository
+        .createQueryBuilder('ingress')
+        .where('ingress.deletedAt IS NULL');
+      const [ingresses, count] = await query.getManyAndCount();
+      return { ingresses, count };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async getOrdersCountByMonth(): Promise<{ [key: string]: number }> {
+    const currentDate = new Date(); // Current date in server's local time
+    const utcCurrentDate = new Date(
+      Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 1),
+    );
+
+    const fourMonthsAgo = new Date(utcCurrentDate);
+    fourMonthsAgo.setMonth(utcCurrentDate.getMonth() - 3);
+
+    try {
+      const query = this.ingressRepository
+        .createQueryBuilder('ingress')
+        .select(
+          "TO_CHAR(DATE_TRUNC('month', ingress.date AT TIME ZONE 'UTC'), 'YYYY-MM')",
+          'yearMonth',
+        )
+        .addSelect('COUNT(*)', 'count')
+        .where('ingress.date >= :date', { date: fourMonthsAgo.toISOString() })
+        .andWhere('ingress.deletedAt IS NULL')
+        .groupBy("DATE_TRUNC('month', ingress.date AT TIME ZONE 'UTC')")
+        .orderBy("DATE_TRUNC('month', ingress.date AT TIME ZONE 'UTC')");
+
+      const results = await query.getRawMany();
+
+      // Initialize monthCounts with all months set to 0
+      const monthCounts = {};
+      for (let i = 0; i < 4; i++) {
+        const tempDate = new Date(
+          Date.UTC(
+            utcCurrentDate.getUTCFullYear(),
+            utcCurrentDate.getUTCMonth() - i,
+            1,
+          ),
+        );
+        const monthName = tempDate.toLocaleString('en-US', {
+          month: 'long',
+          timeZone: 'UTC',
+        });
+        monthCounts[monthName] = 0;
+      }
+
+      // Fill in actual counts from the results
+      results.forEach((result) => {
+        const yearMonth = result.yearMonth.split('-');
+        const date = new Date(
+          Date.UTC(
+            parseInt(yearMonth[0], 10),
+            parseInt(yearMonth[1], 10) - 1,
+            1,
+          ),
+        ); // Convert to Date object in UTC
+        const monthName = date.toLocaleString('en-US', {
+          month: 'long',
+          timeZone: 'UTC',
+        });
+        monthCounts[monthName] = parseInt(result.count, 10);
+      });
+
+      return monthCounts;
+    } catch (error) {
+      this.logger.error('Failed to fetch order count by month:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch order count by month',
+      );
+    }
+  }
+
+  async findAllThisMonthUpToToday(): Promise<{
+    ingresses: Ingress[];
+    total: number;
+  }> {
+    const currentDate = new Date();
+    const firstDayThisMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1,
+    );
+    const today = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+    );
+
+    try {
+      const [data, total] = await this.ingressRepository.findAndCount({
+        where: {
+          date: Between(firstDayThisMonth, today),
+          deletedAt: null,
+        },
+        order: {
+          date: 'DESC',
+        },
+      });
+
+      return {
+        ingresses: data,
+        total,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Error fetching data for this month up to today:',
+        error.message,
+      );
+      throw new InternalServerErrorException(
+        'Failed to fetch data for this month up to today',
+      );
     }
   }
 }
