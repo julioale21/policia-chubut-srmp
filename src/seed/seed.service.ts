@@ -27,8 +27,7 @@ export class SeedService {
     const equipements = await this.createEquipements();
     const moviles = await this.createMoviles(dependencies);
     await this.createIngresses(moviles, equipements);
-    const mechanics = await this.createMechanics();
-    console.log({ mechanics });
+    await this.createMechanics();
 
     return {
       message: 'Seed executed successfully',

@@ -273,7 +273,7 @@ export class IngressService {
     }
   }
 
-  async getOrdersCountByMonth(): Promise<{ [key: string]: number }> {
+  async getOrdersCountByMonth(): Promise<{ month: string; count: number }[]> {
     const currentDate = new Date(); // Current date in server's local time
     const utcCurrentDate = new Date(
       Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), 1),
@@ -297,9 +297,9 @@ export class IngressService {
 
       const results = await query.getRawMany();
 
-      // Initialize monthCounts with all months set to 0
-      const monthCounts = {};
-      for (let i = 0; i < 4; i++) {
+      // Create a sorted array of months starting from four months ago to the current month
+      const monthCounts = [];
+      for (let i = 3; i >= 0; i--) {
         const tempDate = new Date(
           Date.UTC(
             utcCurrentDate.getUTCFullYear(),
@@ -311,7 +311,7 @@ export class IngressService {
           month: 'long',
           timeZone: 'UTC',
         });
-        monthCounts[monthName] = 0;
+        monthCounts.push({ month: monthName, count: 0 }); // Initialize each month with a count of 0
       }
 
       // Fill in actual counts from the results
@@ -323,12 +323,17 @@ export class IngressService {
             parseInt(yearMonth[1], 10) - 1,
             1,
           ),
-        ); // Convert to Date object in UTC
+        );
         const monthName = date.toLocaleString('en-US', {
           month: 'long',
           timeZone: 'UTC',
         });
-        monthCounts[monthName] = parseInt(result.count, 10);
+        const monthIndex = monthCounts.findIndex(
+          (month) => month.month === monthName,
+        );
+        if (monthIndex !== -1) {
+          monthCounts[monthIndex].count = parseInt(result.count, 10);
+        }
       });
 
       return monthCounts;
@@ -341,7 +346,7 @@ export class IngressService {
   }
 
   async findAllThisMonthUpToToday(): Promise<{
-    ingresses: Ingress[];
+    data: Ingress[];
     total: number;
   }> {
     const currentDate = new Date();
@@ -358,6 +363,7 @@ export class IngressService {
 
     try {
       const [data, total] = await this.ingressRepository.findAndCount({
+        relations: ['movil'],
         where: {
           date: Between(firstDayThisMonth, today),
           deletedAt: null,
@@ -368,7 +374,7 @@ export class IngressService {
       });
 
       return {
-        ingresses: data,
+        data,
         total,
       };
     } catch (error) {
