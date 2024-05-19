@@ -101,4 +101,13 @@ export class MovilesService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  async getAllAndCount() {
+    try {
+      const [moviles, count] = await this.movileRepository.findAndCount();
+      return { moviles, count };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

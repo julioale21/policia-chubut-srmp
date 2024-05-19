@@ -6,18 +6,18 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Brackets, DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
 import { CreateEgressDto, SparePartDto } from './dto/create-egress.dto';
 import { Egress } from './entities/egress.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SparePartOrderService } from 'src/spare_part_order/spare_part_order.service';
 import { OrderType } from 'src/spare_part_order/dto/create-spare_part_order.dto';
-import { OrderLineService } from 'src/order_line/order_line.service';
 import { SparePartService } from 'src/spare_part/spare_part.service';
 import { SparePart } from 'src/spare_part/entities/spare_part.entity';
 import { IngressService } from 'src/ingress/ingress.service';
 import { IngressStatus } from 'src/ingress/dto/create-ingress.dto';
 import { Ingress } from 'src/ingress/entities/ingress.entity';
+import { SparePartOrder } from 'src/spare_part_order/entities/spare_part_order.entity';
+import { OrderLine } from 'src/order_line/entities/order_line.entity';
 
 @Injectable()
 export class EgressService {
@@ -26,31 +26,10 @@ export class EgressService {
   constructor(
     @InjectRepository(Egress)
     private readonly egressRepository: Repository<Egress>,
-    private readonly sparePartOrderService: SparePartOrderService,
-    private readonly orderLineService: OrderLineService,
     private readonly sparePartService: SparePartService,
     private readonly ingressService: IngressService,
     private dataSource: DataSource,
   ) {}
-
-  async validateStock(spare_parts: SparePartDto[]) {
-    const stockShortages = [];
-
-    for (const part of spare_parts) {
-      const sparePart = await this.sparePartService.findOne(part.id);
-      if (!sparePart || sparePart.stock < part.quantity) {
-        stockShortages.push({
-          partId: part.id,
-          partModel: sparePart.model,
-          requested: part.quantity,
-          inStock: sparePart ? sparePart.stock : 0,
-          description: `Insufficient stock for part model ${sparePart.model}`,
-        });
-      }
-    }
-
-    return stockShortages;
-  }
 
   async create(createEgressDto: CreateEgressDto) {
     const {
@@ -64,70 +43,35 @@ export class EgressService {
     } = createEgressDto;
 
     // Validate ingress
-    const ingress = await this.ingressService.findOne(ingress_id);
-
-    console.log(ingress);
-
-    if (!ingress) {
-      throw new UnprocessableEntityException('Ingress not found');
-    }
-
-    if (ingress.deletedAt) {
-      throw new UnprocessableEntityException('Ingress is deleted');
-    }
-
-    if (ingress.status === IngressStatus.Completed) {
-      throw new UnprocessableEntityException('Ingress is already completed');
-    }
+    await this.validateIngress(ingress_id);
 
     // Validate stock
-    const stockShortages = await this.validateStock(spare_parts);
-    if (stockShortages.length) {
-      throw new UnprocessableEntityException({
-        message: 'Stock shortages',
-        error: 'Unprocessable Entity',
-        statusCode: 422,
-        stockShortages: stockShortages,
-      });
-    }
+    await this.validateStock(spare_parts);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Create spare part order
-      const spart_part_order = await queryRunner.manager.save(
-        await this.sparePartOrderService.create({
+      const spart_part_order = await this.createSparePartOrder(
+        queryRunner.manager,
+        {
           order_number: order_number,
           date: new Date(),
           observations: '',
           type: OrderType.out,
-        }),
+        },
       );
 
       // Create order lines
-      await Promise.all(
-        spare_parts.map(async (spare_part) =>
-          queryRunner.manager.save(
-            await this.orderLineService.create({
-              spare_part_order_id: spart_part_order.id,
-              spare_part_id: spare_part.id,
-              quantity: spare_part.quantity,
-            }),
-          ),
-        ),
+      await this.createOrderLines(
+        queryRunner.manager,
+        spart_part_order.id,
+        spare_parts,
       );
 
       // Update stock
-      for (const spare_part of spare_parts) {
-        await queryRunner.manager.decrement(
-          SparePart,
-          { id: spare_part.id },
-          'stock',
-          spare_part.quantity,
-        );
-      }
+      await this.updateStock(queryRunner.manager, spare_parts);
 
       // Create egress
       const egress = queryRunner.manager.create(Egress, {
@@ -141,14 +85,10 @@ export class EgressService {
         spare_part_order: spart_part_order,
       });
 
-      console.log('entre aca');
-
       // Update ingress status
       await queryRunner.manager.update(Ingress, ingress_id, {
         status: IngressStatus.Completed,
       });
-
-      console.log('entre aca 2');
 
       await queryRunner.manager.save(egress);
 
@@ -157,7 +97,7 @@ export class EgressService {
     } catch (error) {
       this.logger.error(error.message);
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException(error.message);
+      this.handleTransactionalDatabaseError(error);
     } finally {
       await queryRunner.release();
     }
@@ -273,6 +213,141 @@ export class EgressService {
 
     try {
       return await query.delete().where({}).execute();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async createSparePartOrder(
+    queryRunner: EntityManager,
+    orderDetails: {
+      order_number: string;
+      date: Date;
+      observations: string;
+      type: string;
+    },
+  ): Promise<SparePartOrder> {
+    const orderData = {
+      order_number: orderDetails.order_number,
+      date: orderDetails.date || new Date(),
+      observations: orderDetails.observations || '',
+      type: orderDetails.type || OrderType.out,
+    };
+    return this.createWithManager(queryRunner, orderData, SparePartOrder);
+  }
+
+  async createOrderLines(
+    manager: EntityManager,
+    spart_part_order_id: string,
+    spare_parts: SparePartDto[],
+  ): Promise<void> {
+    await Promise.all(
+      spare_parts.map(async (spare_part) =>
+        this.createWithManager(
+          manager,
+          {
+            quantity: spare_part.quantity,
+            sparePartOrder: { id: spart_part_order_id },
+            sparePart: { id: spare_part.id },
+          },
+          OrderLine,
+        ),
+      ),
+    );
+  }
+
+  async updateStock(
+    manager: EntityManager,
+    spare_parts: SparePartDto[],
+  ): Promise<void> {
+    for (const spare_part of spare_parts) {
+      await manager.decrement(
+        SparePart,
+        { id: spare_part.id },
+        'stock',
+        spare_part.quantity,
+      );
+    }
+  }
+
+  async createWithManager<T>(
+    manager: EntityManager,
+    createDto: any,
+    entity: { new (): T },
+  ): Promise<T> {
+    const entityInstance = manager.create(entity, createDto);
+    await manager.save(entityInstance);
+    return entityInstance;
+  }
+
+  handleTransactionalDatabaseError(error: any): never {
+    const logger = new Logger('DatabaseErrorHandler');
+    if (error.driverError && error.driverError.code) {
+      switch (error.driverError.code) {
+        case '23505':
+          throw new BadRequestException('Duplicate entry detected.');
+        case '23503':
+          throw new BadRequestException('Referenced entity not found.');
+        default:
+          logger.error(`Database error: ${error.message}`, error.stack);
+          throw new InternalServerErrorException('Database error occurred.');
+      }
+    } else {
+      logger.error('Failed to process your request', error.stack);
+      throw new InternalServerErrorException('Failed to process your request.');
+    }
+  }
+
+  async validateStock(spare_parts: SparePartDto[]) {
+    const stockShortages = [];
+
+    for (const part of spare_parts) {
+      const sparePart = await this.sparePartService.findOne(part.id);
+      if (!sparePart || sparePart.stock < part.quantity) {
+        stockShortages.push({
+          partId: part.id,
+          partModel: sparePart.model,
+          requested: part.quantity,
+          inStock: sparePart ? sparePart.stock : 0,
+          description: `Insufficient stock for part model ${sparePart.model}`,
+        });
+      }
+    }
+
+    if (stockShortages.length) {
+      throw new UnprocessableEntityException({
+        message: 'Stock shortages',
+        error: 'Unprocessable Entity',
+        statusCode: 422,
+        stockShortages: stockShortages,
+      });
+    }
+  }
+
+  async validateIngress(ingress_id: string) {
+    const ingress = await this.ingressService.findOne(ingress_id);
+
+    if (!ingress) {
+      throw new UnprocessableEntityException('Ingress not found');
+    }
+
+    if (ingress.deletedAt) {
+      throw new UnprocessableEntityException('Ingress is deleted');
+    }
+
+    if (ingress.status === IngressStatus.Completed) {
+      throw new UnprocessableEntityException('Ingress is already completed');
+    }
+  }
+
+  async getAllAndCount() {
+    const query = this.egressRepository
+      .createQueryBuilder('egress')
+      .where('egress.deletedAt IS NULL');
+
+    try {
+      const [data, count] = await query.getManyAndCount();
+      return { data, count };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

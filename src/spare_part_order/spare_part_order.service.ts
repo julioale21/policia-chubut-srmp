@@ -1,11 +1,15 @@
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Provider } from 'src/provider/entities/provider.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateSparePartOrderDto } from './dto/create-spare_part_order.dto';
+import {
+  CreateSparePartOrderDto,
+  OrderType,
+} from './dto/create-spare_part_order.dto';
 import { UpdateSparePartOrderDto } from './dto/update-spare_part_order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SparePartOrder } from './entities/spare_part_order.entity';
 import { ProviderService } from 'src/provider/provider.service';
+import { OrderLine } from 'src/order_line/entities/order_line.entity';
 
 @Injectable()
 export class SparePartOrderService {
@@ -17,26 +21,54 @@ export class SparePartOrderService {
   ) {}
 
   async create(createSparePartOrderDto: CreateSparePartOrderDto) {
-    const { provider_id, ...rest } = createSparePartOrderDto;
+    try {
+      return await this.sparePartOrderRepository.manager.transaction(
+        async (entityManager) => {
+          const { provider_id, spare_part_items, ...rest } =
+            createSparePartOrderDto;
 
-    let provider: Provider;
+          let provider = null;
+          if (provider_id && rest.type === OrderType.in) {
+            provider = await this.providerService.findOne(provider_id);
+            if (!provider) {
+              throw new NotFoundException(`Provider #${provider_id} not found`);
+            }
+          }
 
-    if (provider_id) {
-      provider = await this.providerService.findOne(provider_id);
+          const sparePartOrder = entityManager.create(SparePartOrder, {
+            ...rest,
+            provider,
+          });
 
-      if (!provider) {
-        throw new NotFoundException(`Provider #${provider_id} not found`);
-      }
+          await entityManager.save(sparePartOrder);
+
+          for (const item of spare_part_items) {
+            const orderLine = entityManager.create(OrderLine, {
+              sparePartOrder,
+              sparePart: { id: item.spare_part_id },
+              quantity: item.quantity,
+            });
+
+            await entityManager.save(orderLine);
+          }
+
+          for (const spare_part_item of spare_part_items) {
+            await this.updateProductStock(
+              spare_part_item.spare_part_id,
+              entityManager,
+            );
+          }
+
+          return await entityManager.findOne(SparePartOrder, {
+            where: { id: sparePartOrder.id },
+            relations: ['orderLines', 'provider'],
+          });
+        },
+      );
+    } catch (error) {
+      console.error(error);
+      throw new Error(error.message);
     }
-
-    const sparePartOrder = this.sparePartOrderRepository.create({
-      ...rest,
-      provider,
-    });
-
-    await this.sparePartOrderRepository.save(sparePartOrder);
-
-    return sparePartOrder;
   }
 
   async findAll() {
@@ -104,5 +136,33 @@ export class SparePartOrderService {
       console.error(error.message);
       throw new Error(error.message);
     }
+  }
+
+  async updateProductStock(sparePartId: string, entityManager: EntityManager) {
+    const orderLines = await entityManager
+      .createQueryBuilder(OrderLine, 'line')
+      .innerJoinAndSelect('line.sparePartOrder', 'order')
+      .innerJoinAndSelect('line.sparePart', 'sparePart')
+      .where('sparePart.id = :sparePartId', { sparePartId })
+      .getMany();
+
+    let totalQuantity = 0;
+    let spare_part = null;
+
+    orderLines.forEach((line) => {
+      totalQuantity +=
+        line.sparePartOrder.type === 'in' ? line.quantity : -line.quantity;
+      if (!spare_part) {
+        spare_part = line.sparePart;
+      }
+    });
+
+    if (!spare_part) {
+      throw new NotFoundException(`Product #${sparePartId} not found`);
+    }
+    spare_part.stock = totalQuantity;
+    await entityManager.save(spare_part);
+
+    return spare_part;
   }
 }

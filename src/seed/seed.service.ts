@@ -9,7 +9,6 @@ import { IngressService } from 'src/ingress/ingress.service';
 import { Equipement } from 'src/equipements/entities/equipement.entity';
 import { EquipementIngressService } from 'src/equipement-ingress/equipement-ingress.service';
 import { MechanicsService } from 'src/mechanics/mechanics.service';
-import { ProviderService } from 'src/provider/provider.service';
 
 @Injectable()
 export class SeedService {
@@ -20,7 +19,6 @@ export class SeedService {
     private readonly ingressService: IngressService,
     private readonly equipementIngressService: EquipementIngressService,
     private readonly mechanicsService: MechanicsService,
-    private readonly providerService: ProviderService,
   ) {}
 
   async runSeed() {
@@ -29,8 +27,7 @@ export class SeedService {
     const equipements = await this.createEquipements();
     const moviles = await this.createMoviles(dependencies);
     await this.createIngresses(moviles, equipements);
-    const mechanics = await this.createMechanics();
-    console.log({ mechanics });
+    await this.createMechanics();
 
     return {
       message: 'Seed executed successfully',

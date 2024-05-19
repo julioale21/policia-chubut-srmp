@@ -1,4 +1,10 @@
-import { IsArray, IsNotEmpty, IsPositive, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 
 export class CreateSparePartDto {
   @IsString()
@@ -11,14 +17,18 @@ export class CreateSparePartDto {
 
   @IsString()
   @IsNotEmpty()
+  code: string;
+
+  @IsString()
+  @IsOptional()
   description: string;
 
   @IsString({ each: true })
   @IsArray()
-  @IsNotEmpty()
-  compatibility_vehicle: string[];
+  @IsOptional()
+  compatible_vehicles: string[];
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsPositive()
-  stock: number;
+  stock?: number;
 }

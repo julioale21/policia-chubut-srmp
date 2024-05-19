@@ -67,4 +67,13 @@ export class ProviderService {
     await this.providerRepository.clear();
     return 'All providers deleted';
   }
+
+  async getAllAndCount() {
+    try {
+      const [providers, count] = await this.providerRepository.findAndCount();
+      return { providers, count };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

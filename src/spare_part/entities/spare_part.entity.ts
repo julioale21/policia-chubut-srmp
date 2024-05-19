@@ -12,11 +12,14 @@ export class SparePart {
   @Column('text', { unique: true })
   model: string;
 
-  @Column('text')
+  @Column('text', { unique: true })
+  code: string;
+
+  @Column('text', { nullable: true })
   description: string;
 
-  @Column('text', { array: true })
-  compatibility_vehicle: string[];
+  @Column('text', { array: true, nullable: true })
+  compatible_vehicles: string[];
 
   @Column('float', { default: 0 })
   stock: number;
