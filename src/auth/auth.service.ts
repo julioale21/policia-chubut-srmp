@@ -65,6 +65,8 @@ export class AuthService {
       (user) => user.email === email && user.password === password,
     );
 
+    console.log({user})
+
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     let localUser = await this.userRepository.findOneBy({ email });

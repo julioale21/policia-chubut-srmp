@@ -2,7 +2,7 @@ import {
   IsArray,
   IsNotEmpty,
   IsOptional,
-  IsPositive,
+  // IsPositive,
   IsString,
 } from 'class-validator';
 
@@ -28,7 +28,7 @@ export class CreateSparePartDto {
   @IsOptional()
   compatible_vehicles: string[];
 
-  @IsOptional()
-  @IsPositive()
-  stock?: number;
+  // @IsOptional()
+  // @IsPositive()
+  // stock?: number;
 }
